@@ -1,5 +1,5 @@
 {
   "remoteName": "earth-wallpaper-r2",
-  "bucket": "YOUR_R2_BUCKET_NAME",
+  "bucket": "earth-wallpaper-content",
   "publicBaseUrl": "https://YOUR_PUBLIC_R2_HOST/"
 }

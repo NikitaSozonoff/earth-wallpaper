@@ -56,6 +56,19 @@ The future R2 deployment configuration is split into:
 - `publisher/deploy.config.json` — ignored local values;
 - rclone's user-level configuration — credentials, never committed.
 
+## Content deployment commands
+
+From `publisher/`:
+
+```powershell
+.\deploy.ps1 -DryRun       # validate, build and preview without R2 writes
+.\deploy.ps1               # confirm interactively, publish, then verify public files
+.\deploy.ps1 -Yes          # non-interactive publish for trusted local automation
+.\deploy.ps1 -SkipBuild    # deploy the already generated release
+```
+
+The double-clickable `publish-to-r2.cmd` uses the interactive safe path. Deployment adds immutable assets/catalogs and replaces manifests last; it never deletes remote objects.
+
 ## Logs and local application data
 
 The current prototype uses `%LOCALAPPDATA%/EarthWallpaperPrototype/`. Stage 6 will migrate this directory to `%LOCALAPPDATA%/EarthWallpaper/` while preserving settings and cached assets.

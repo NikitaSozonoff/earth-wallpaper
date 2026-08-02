@@ -19,7 +19,19 @@ Publisher converts the `Export` worksheet and the original images into a static,
    .\publish.ps1
    ```
 
-6. Upload the contents of `../content/publish/` to the root of the Cloudflare public bucket or static site.
+6. Preview the R2 deployment:
+
+   ```powershell
+   .\deploy.ps1 -DryRun
+   ```
+
+7. Publish after reviewing the plan:
+
+   ```powershell
+   .\deploy.ps1
+   ```
+
+   Alternatively, double-click `publish-to-r2.cmd`. Both options require typing `PUBLISH` before R2 is changed.
 
 The first run restores the `ClosedXML` NuGet dependency. Excel itself is not required.
 
@@ -36,6 +48,18 @@ All local paths and validation policy are in `publisher.config.json`. Paths are 
 - `shortDescriptionMaxLength`: maximum length of a short description derived from the full description.
 
 The current workbook has no `Ready` rows yet, so `requireReadyValidation` is temporarily `false`. Turn it on when the table is fully curated.
+
+## R2 deployment configuration
+
+Copy `deploy.config.example.json` to the ignored local file `deploy.config.json` and set:
+
+- `remoteName`: the local rclone remote, normally `earth-wallpaper-r2`;
+- `bucket`: the R2 bucket name;
+- `publicBaseUrl`: the public `r2.dev` or custom-domain URL, ending in `/`.
+
+Cloudflare credentials remain in rclone's per-user configuration. They are never read from project files and must never be committed.
+
+`deploy.ps1` always builds and validates the release before upload unless `-SkipBuild` is explicitly supplied. It uses `rclone copy`, never `sync`: no remote files are deleted. Assets and catalogs are uploaded first; mutable manifests are uploaded last. After a real deployment, both public manifests and their referenced catalogs are downloaded and verified. `-DryRun` performs the complete local validation and asks rclone for an upload plan without changing R2.
 
 ## Output contract
 
@@ -66,7 +90,11 @@ Warnings include missing descriptions, non-`Ready` validation status and non-sta
 ## Logs and reports
 
 - `state/logs/publisher-YYYY-MM-DD.jsonl`: append-only operational log, one JSON object per event.
+- `state/logs/deploy-YYYY-MM-DD.jsonl`: append-only deployment events.
+- `state/logs/rclone-<run-id>.log`: detailed transfer output without credentials.
 - `state/reports/latest-validation.json`: overwritten on every run for quick review.
 - `state/reports/run-YYYYMMDD-HHMMSS.json`: immutable audit report for an individual run.
+- `state/reports/latest-deploy.json`: latest deployment result and published content versions.
+- `state/reports/deploy-<run-id>.json`: immutable deployment history.
 
 Logs contain event names, row numbers, IDs and error types. They do not contain Cloudflare credentials, authorization headers or file contents.
