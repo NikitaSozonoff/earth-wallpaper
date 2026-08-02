@@ -13,6 +13,8 @@ public sealed class WidgetSettings
     public ContentUpdateMode ContentUpdateMode { get; set; } = ContentUpdateMode.NotifyAutomatically;
     public DateTimeOffset? LastContentCheckUtc { get; set; }
     public DateTimeOffset? LastContentCheckAttemptUtc { get; set; }
+    public DateTimeOffset? LastApplicationUpdateCheckUtc { get; set; }
+    public bool LaunchAtStartup { get; set; }
     public double WidgetScale { get; set; } = 1.0;
     public double PanelOpacity { get; set; } = 0.84;
     public int? WindowX { get; set; }

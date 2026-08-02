@@ -5,10 +5,7 @@ namespace WallpaperWidget.Services;
 public static class AppLog
 {
     private static readonly object Sync = new();
-    private static readonly string DirectoryPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "EarthWallpaperPrototype",
-        "logs");
+    private static readonly string DirectoryPath = AppPaths.LogsPath;
     private static bool _initialized;
 
     public static void Initialize()
@@ -27,6 +24,7 @@ public static class AppLog
             _initialized = true;
         }
         Info("app_started", "Application started.");
+        if (AppPaths.MigrationMessage is not null) Info("app_data_migration", AppPaths.MigrationMessage);
     }
 
     public static void Info(string eventName, string message, object? data = null) => Write("app", "info", eventName, message, data);

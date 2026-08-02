@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore and test
+        shell: pwsh
+        run: |
+          dotnet restore app/WallpaperWidget/WallpaperWidget.csproj
+          dotnet restore tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj
+          dotnet run --project tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj -c Release --no-restore -- --resume-only
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build release artifacts
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          ./scripts/build-release.ps1 -Version $version -RequireInstaller
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart("v")
+          $assets = @(Get-ChildItem "artifacts/release/$version" -File | ForEach-Object { $_.FullName })
+          $arguments = @("release", "create", $tag) + $assets + @("--title", "Earth Wallpaper $version", "--generate-notes")
+          if ($version.Contains("-")) { $arguments += "--prerelease" }
+          gh @arguments

@@ -128,6 +128,24 @@
                                             <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
 
                                             <StackPanel Spacing="8">
+                                                <TextBlock Text="APPLICATION" Classes="SectionLabel" />
+                                                <CheckBox Content="Start with Windows"
+                                                          IsChecked="{Binding LaunchAtStartup, Mode=TwoWay}"
+                                                          IsEnabled="{Binding AutostartAvailable}" />
+                                                <TextBlock Text="{Binding AutostartStatusText}"
+                                                           FontSize="11" Foreground="#8E99A6" TextWrapping="Wrap" />
+                                                <Button Classes="MenuButton"
+                                                        Content="Check for application updates"
+                                                        IsEnabled="{Binding ApplicationUpdateControlsEnabled}"
+                                                        Click="CheckApplicationUpdates_OnClick" />
+                                                <TextBlock Text="{Binding ApplicationUpdateStatusText}"
+                                                           FontSize="11" LineHeight="15" Foreground="#8E99A6"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
+
+                                            <StackPanel Spacing="8">
                                                 <TextBlock Text="ACTIONS" Classes="SectionLabel" />
                                                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
                                                     <StackPanel>

@@ -7,7 +7,53 @@ using WallpaperWidget.Services;
 
 if (!args.Contains("--resume-only", StringComparer.OrdinalIgnoreCase))
     await CheckPublishedCatalogsAsync();
+CheckApplicationVersions();
+await CheckApplicationUpdateDiscoveryAsync();
 await CheckResumableInstallAsync();
+
+static void CheckApplicationVersions()
+{
+    var ordered = new[] { "v0.1.0-beta.1", "0.1.0-beta.2", "0.1.0", "0.2.0-beta.1" }
+        .Select(value => SemanticVersion.TryParse(value, out var parsed)
+            ? parsed
+            : throw new InvalidOperationException($"Version could not be parsed: {value}"))
+        .ToArray();
+    for (var index = 1; index < ordered.Length; index++)
+    {
+        if (ordered[index - 1].CompareTo(ordered[index]) >= 0)
+            throw new InvalidOperationException($"Version ordering failed: {ordered[index - 1]} >= {ordered[index]}");
+    }
+    Console.WriteLine("application versions: prerelease and stable ordering verified");
+}
+
+static async Task CheckApplicationUpdateDiscoveryAsync()
+{
+    const string releaseJson = """
+    [
+      {
+        "tag_name": "v0.1.0-beta.2",
+        "name": "Earth Wallpaper 0.1.0-beta.2",
+        "html_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/tag/v0.1.0-beta.2",
+        "body": "Smoke-test release notes.",
+        "draft": false,
+        "prerelease": true,
+        "assets": [
+          {
+            "name": "EarthWallpaper-Setup-0.1.0-beta.2.exe",
+            "browser_download_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/download/v0.1.0-beta.2/EarthWallpaper-Setup-0.1.0-beta.2.exe"
+          }
+        ]
+      }
+    ]
+    """;
+    var service = new ApplicationUpdateService(
+        new StaticJsonHandler(releaseJson),
+        currentVersion: "0.1.0-beta.1");
+    var result = await service.CheckAsync();
+    if (!result.IsUpdateAvailable || result.AvailableUpdate?.Version != "0.1.0-beta.2" || result.AvailableUpdate.InstallerDownloadUrl is null)
+        throw new InvalidOperationException("GitHub release discovery did not select the newer installer.");
+    Console.WriteLine("application update: newer GitHub prerelease and Setup asset discovered");
+}
 
 static async Task CheckPublishedCatalogsAsync()
 {
@@ -142,4 +188,13 @@ sealed class FakeContentHandler(
     {
         Content = new ByteArrayContent(bytes),
     };
+}
+
+sealed class StaticJsonHandler(string json) : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+        Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json"),
+        });
 }

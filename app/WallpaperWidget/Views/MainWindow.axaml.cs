@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     public event EventHandler? ContentPackChangeRequested;
     public event EventHandler? ContentUpdateCheckRequested;
     public event EventHandler? ContentUpdateInstallRequested;
+    public event EventHandler? ApplicationUpdateCheckRequested;
     public event Func<int, Task>? ContentUpdateModeChangeRequested;
 
     public MainWindow()
@@ -98,6 +99,7 @@ public partial class MainWindow : Window
     private void ChangeContentPack_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ContentPackChangeRequested?.Invoke(this, EventArgs.Empty);
     private void CheckContentUpdates_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ContentUpdateCheckRequested?.Invoke(this, EventArgs.Empty);
     private void InstallContentUpdate_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ContentUpdateInstallRequested?.Invoke(this, EventArgs.Empty);
+    private void CheckApplicationUpdates_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ApplicationUpdateCheckRequested?.Invoke(this, EventArgs.Empty);
 
     private async void ContentUpdateMode_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {

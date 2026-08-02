@@ -6,10 +6,7 @@ namespace WallpaperWidget.Services;
 public sealed class SettingsService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-    private readonly string _settingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "EarthWallpaperPrototype",
-        "settings.json");
+    private readonly string _settingsPath = AppPaths.SettingsPath;
 
     public WidgetSettings Load()
     {

@@ -10,7 +10,7 @@ The application contacts its configured public Cloudflare R2 endpoint to:
 - calculate available content changes and download size;
 - download missing image assets after confirmation or according to the selected automatic-update mode.
 
-Stage 6 will add an optional request to GitHub's public Releases API to check for application updates.
+The application requests the public GitHub Releases API at most once per day, or when the user asks, to check for application updates. It sends no account token or application settings. GitHub receives the normal network metadata associated with an HTTPS request.
 
 ## Local data
 

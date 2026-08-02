@@ -13,6 +13,7 @@ public sealed class MainViewModel : ViewModelBase
     private readonly CatalogService _catalogService;
     private readonly SettingsService _settingsService;
     private readonly IWallpaperService _wallpaperService;
+    private readonly AutostartService _autostartService;
     private readonly WidgetSettings _settings;
     private readonly DispatcherTimer _rotationTimer;
     private static readonly int[] RotationMinuteValues = [1, 15, 30, 60, 360, 1440];
@@ -22,19 +23,24 @@ public sealed class MainViewModel : ViewModelBase
     private string _contentUpdateStatusText = "Content has not been checked yet.";
     private bool _hasPendingContentUpdate;
     private bool _isContentUpdateBusy;
+    private string _applicationUpdateStatusText = $"Version {ApplicationVersion.Display}";
+    private bool _isApplicationUpdateBusy;
 
     public MainViewModel(
         IReadOnlyList<PlaceEntry> entries,
         CatalogService catalogService,
         SettingsService settingsService,
         IWallpaperService wallpaperService,
+        AutostartService autostartService,
         WidgetSettings settings)
     {
         _entries = entries.Count > 0 ? entries : throw new InvalidOperationException("The catalog contains no usable places.");
         _catalogService = catalogService;
         _settingsService = settingsService;
         _wallpaperService = wallpaperService;
+        _autostartService = autostartService;
         _settings = settings;
+        _settings.LaunchAtStartup = autostartService.IsEnabled();
         _currentIndex = Math.Clamp(settings.CurrentIndex, 0, _entries.Count - 1);
         _rotationTimer = new DispatcherTimer();
         _rotationTimer.Tick += (_, _) => Next();
@@ -122,6 +128,30 @@ public sealed class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(RotationStatusText));
             UpdateRotationTimer();
             Save();
+        }
+    }
+
+    public bool LaunchAtStartup
+    {
+        get => _settings.LaunchAtStartup;
+        set
+        {
+            if (_settings.LaunchAtStartup == value) return;
+            try
+            {
+                _autostartService.SetEnabled(value);
+                _settings.LaunchAtStartup = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AutostartStatusText));
+                Save();
+                AppLog.Info("autostart_changed", value ? "Start with Windows enabled." : "Start with Windows disabled.");
+            }
+            catch (Exception exception)
+            {
+                AppLog.Warning("autostart_change_failed", "The startup setting could not be changed.", new { exception = exception.GetType().Name });
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AutostartStatusText));
+            }
         }
     }
 
@@ -225,6 +255,22 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
+    public string ApplicationUpdateStatusText
+    {
+        get => _applicationUpdateStatusText;
+        private set => SetProperty(ref _applicationUpdateStatusText, value);
+    }
+
+    public bool IsApplicationUpdateBusy
+    {
+        get => _isApplicationUpdateBusy;
+        private set
+        {
+            if (SetProperty(ref _isApplicationUpdateBusy, value))
+                OnPropertyChanged(nameof(ApplicationUpdateControlsEnabled));
+        }
+    }
+
     public bool ControlsOnly => !ShowLocation && !ShowTitle && !ShowShortDescription;
     public bool LocationVisible => ShowLocation && !string.IsNullOrWhiteSpace(LocationLine);
     public bool TitleVisible => ShowTitle;
@@ -263,6 +309,11 @@ public sealed class MainViewModel : ViewModelBase
     public int ContentUpdateModeIndex => (int)_settings.ContentUpdateMode;
     public bool PendingUpdateButtonVisible => HasPendingContentUpdate;
     public bool ContentUpdateControlsEnabled => !IsContentUpdateBusy;
+    public bool ApplicationUpdateControlsEnabled => !IsApplicationUpdateBusy;
+    public bool AutostartAvailable => _autostartService.IsSupported;
+    public string AutostartStatusText => AutostartAvailable
+        ? LaunchAtStartup ? "Starts hidden in the notification area." : "Disabled."
+        : "Available in the installed Windows application.";
     public IBrush PanelBrush => new SolidColorBrush(Color.FromArgb((byte)(PanelOpacity * 255), 22, 25, 31));
     public IBrush PanelBorderBrush => new SolidColorBrush(IsEditing
         ? Color.FromArgb(230, 118, 167, 255)
@@ -348,6 +399,18 @@ public sealed class MainViewModel : ViewModelBase
         _settings.LastContentCheckUtc = DateTimeOffset.UtcNow;
         _settings.LastContentCheckAttemptUtc = _settings.LastContentCheckUtc;
         Save();
+    }
+
+    public void MarkApplicationUpdateCheckSucceeded()
+    {
+        _settings.LastApplicationUpdateCheckUtc = DateTimeOffset.UtcNow;
+        Save();
+    }
+
+    public void SetApplicationUpdateState(string message, bool isBusy = false)
+    {
+        ApplicationUpdateStatusText = message;
+        IsApplicationUpdateBusy = isBusy;
     }
 
     public void SetContentUpdateState(string message, bool hasPendingUpdate, bool isBusy = false)

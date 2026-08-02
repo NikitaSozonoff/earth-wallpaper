@@ -33,7 +33,7 @@ git diff --cached
 
 ## Releases
 
-Stage 6 will add a Windows installer and release script. Application binaries will be attached to GitHub Releases rather than committed to the repository:
+Application binaries are attached to GitHub Releases rather than committed to the repository:
 
 ```text
 EarthWallpaper-Setup-<version>.exe
@@ -42,6 +42,8 @@ checksums.txt
 ```
 
 The first public test release will use a prerelease tag such as `v0.1.0-beta`.
+
+Pushing a version tag runs `.github/workflows/release.yml`, which tests the application, builds the self-contained `win-x64` package and Inno Setup installer, creates SHA-256 checksums, and publishes a GitHub prerelease when the version contains a suffix such as `-beta.1`.
 
 ## License
 

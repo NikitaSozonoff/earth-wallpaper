@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WallpaperWidget.Views.ApplicationUpdateWindow"
+        Title="Earth Wallpaper update"
+        Width="460" MinHeight="300" MaxHeight="620"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#F51B1E24">
+    <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Text="APPLICATION UPDATE" FontSize="11" FontWeight="Bold" Foreground="#97A2B0" LetterSpacing="1.2" />
+            <TextBlock x:Name="VersionText" FontSize="22" FontWeight="SemiBold" Foreground="#F5F7FA" />
+            <TextBlock x:Name="ReleaseNameText" FontSize="12" Foreground="#9CA6B3" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="Your wallpaper collection and personal settings will be preserved. The installer replaces only the application files."
+                   FontSize="12" LineHeight="17" Foreground="#C3CAD3" TextWrapping="Wrap" />
+
+        <Border Grid.Row="2" Padding="14" CornerRadius="10" Background="#12000000" BorderBrush="#20FFFFFF" BorderThickness="1">
+            <ScrollViewer MaxHeight="270" VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ReleaseNotesText" FontSize="12" LineHeight="17" Foreground="#B9C1CB" TextWrapping="Wrap" />
+            </ScrollViewer>
+        </Border>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <TextBlock x:Name="ChannelText" VerticalAlignment="Center" FontSize="11" Foreground="#7F8995" />
+            <Button Grid.Column="1" Content="Later" Padding="18,8" Click="Later_OnClick" />
+            <Button Grid.Column="2" Content="Open installer" Padding="18,8" Classes="accent" Click="OpenInstaller_OnClick" />
+        </Grid>
+    </Grid>
+</Window>

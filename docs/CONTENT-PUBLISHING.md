@@ -39,7 +39,7 @@ Publisher создаёт две коллекции:
 4. после подтверждения скачивает только отсутствующие файлы;
 5. возобновляет незаконченные `.partial`-файлы через HTTP Range;
 6. проверяет размер и SHA-256;
-7. сохраняет каталог и изображения в `%LOCALAPPDATA%/EarthWallpaperPrototype/content/`;
+7. сохраняет каталог и изображения в `%LOCALAPPDATA%/EarthWallpaper/content/`;
 8. переключает активную версию только после успешной проверки всех файлов;
 9. сразу перечитывает каталог в работающем виджете.
 
@@ -63,8 +63,8 @@ Publisher:
 
 Приложение:
 
-- `%LOCALAPPDATA%/EarthWallpaperPrototype/logs/app-YYYY-MM-DD.jsonl`;
-- `%LOCALAPPDATA%/EarthWallpaperPrototype/logs/content-update-YYYY-MM-DD.jsonl`;
+- `%LOCALAPPDATA%/EarthWallpaper/logs/app-YYYY-MM-DD.jsonl`;
+- `%LOCALAPPDATA%/EarthWallpaper/logs/content-update-YYYY-MM-DD.jsonl`;
 - журналы старше 14 дней удаляются автоматически;
 - фиксируются проверка версии, успешная установка и тип ошибки, но не URL с параметрами и не содержимое файлов.
 

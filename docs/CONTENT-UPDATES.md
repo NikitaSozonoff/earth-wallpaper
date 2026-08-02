@@ -38,10 +38,10 @@ The confirmation button includes the calculated amount, for example `Download 16
 
 Current prototype paths:
 
-- settings: `%LOCALAPPDATA%/EarthWallpaperPrototype/settings.json`
-- content: `%LOCALAPPDATA%/EarthWallpaperPrototype/content/`
-- general log: `%LOCALAPPDATA%/EarthWallpaperPrototype/logs/app-YYYY-MM-DD.jsonl`
-- update log: `%LOCALAPPDATA%/EarthWallpaperPrototype/logs/content-update-YYYY-MM-DD.jsonl`
+- settings: `%LOCALAPPDATA%/EarthWallpaper/settings.json`
+- content: `%LOCALAPPDATA%/EarthWallpaper/content/`
+- general log: `%LOCALAPPDATA%/EarthWallpaper/logs/app-YYYY-MM-DD.jsonl`
+- update log: `%LOCALAPPDATA%/EarthWallpaper/logs/content-update-YYYY-MM-DD.jsonl`
 
 Logs older than 14 days are removed at application startup. Logs contain versions, counts, byte totals and exception types, but not downloaded file contents or credentials.
 

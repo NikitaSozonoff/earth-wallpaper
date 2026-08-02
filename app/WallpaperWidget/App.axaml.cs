@@ -14,20 +14,33 @@ public partial class App : Application
 {
     private static readonly TimeSpan AutomaticCheckInterval = TimeSpan.FromHours(24);
     private static readonly TimeSpan FailedCheckRetryInterval = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan ApplicationUpdateCheckInterval = TimeSpan.FromHours(24);
     private MainWindow? _mainWindow;
     private MainViewModel? _viewModel;
     private NativeMenuItem? _trayVisibilityItem;
     private NativeMenuItem? _trayContentUpdateItem;
+    private NativeMenuItem? _trayApplicationUpdateItem;
     private TrayIcon? _trayIcon;
     private CatalogService? _catalogService;
     private ContentUpdateService? _contentUpdateService;
+    private ApplicationUpdateService? _applicationUpdateService;
     private ContentUpdatePlan? _pendingPlan;
+    private ApplicationUpdateInfo? _availableApplicationUpdate;
+    private bool _startMinimized;
     private readonly SemaphoreSlim _contentUpdateLock = new(1, 1);
     private readonly DispatcherTimer _contentCheckTimer = new() { Interval = TimeSpan.FromMinutes(30) };
 
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    public void ActivateFromExternalRequest()
+    {
+        if (_mainWindow is null) return;
+        _mainWindow.BringToFrontFromTray();
+        UpdateTrayVisibilityText();
+        AppLog.Info("existing_instance_activated", "The existing application window was activated.");
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -40,15 +53,19 @@ public partial class App : Application
             var contentStorage = new ContentStorage();
             _catalogService = new CatalogService(contentStorage);
             _contentUpdateService = new ContentUpdateService(contentStorage);
+            _applicationUpdateService = new ApplicationUpdateService();
             var settingsService = new SettingsService();
             var settings = settingsService.Load();
             var entries = _catalogService.Load();
+            var autostartService = new AutostartService();
+            _startMinimized = desktop.Args?.Contains("--minimized", StringComparer.OrdinalIgnoreCase) == true;
 
             _viewModel = new MainViewModel(
                 entries,
                 _catalogService,
                 settingsService,
                 WallpaperServiceFactory.Create(),
+                autostartService,
                 settings);
 
             _mainWindow = new MainWindow(_viewModel);
@@ -57,6 +74,7 @@ public partial class App : Application
             _mainWindow.ContentUpdateCheckRequested += MainWindow_ContentUpdateCheckRequested;
             _mainWindow.ContentUpdateInstallRequested += MainWindow_ContentUpdateInstallRequested;
             _mainWindow.ContentUpdateModeChangeRequested += MainWindow_ContentUpdateModeChangeRequested;
+            _mainWindow.ApplicationUpdateCheckRequested += MainWindow_ApplicationUpdateCheckRequested;
             _mainWindow.Opened += MainWindow_OnOpened;
             desktop.MainWindow = _mainWindow;
 
@@ -68,6 +86,7 @@ public partial class App : Application
                 var menuItems = _trayIcon.Menu?.Items.OfType<NativeMenuItem>().ToArray() ?? [];
                 _trayVisibilityItem = menuItems.FirstOrDefault(item => item.Header?.ToString() == "Hide widget");
                 _trayContentUpdateItem = menuItems.FirstOrDefault(item => item.Header?.ToString() == "Check for content updates");
+                _trayApplicationUpdateItem = menuItems.FirstOrDefault(item => item.Header?.ToString() == "Check for application updates");
             }
 
             _contentCheckTimer.Tick += ContentCheckTimer_OnTick;
@@ -106,6 +125,13 @@ public partial class App : Application
         else await CheckCurrentPackAsync(ContentCheckReason.Manual);
     }
 
+    private async void TrayApplicationUpdate_OnClick(object? sender, EventArgs e)
+    {
+        if (_mainWindow is { IsVisible: false }) _mainWindow.ShowFromTray();
+        if (_availableApplicationUpdate is not null) await ShowApplicationUpdateAsync(_availableApplicationUpdate);
+        else await CheckApplicationUpdateAsync(ApplicationUpdateCheckReason.Manual);
+    }
+
     private void UpdateTrayVisibilityText()
     {
         if (_trayVisibilityItem is not null)
@@ -133,14 +159,21 @@ public partial class App : Application
         try
         {
             if (_viewModel is null) return;
-            if (!ContentPacks.IsValid(_viewModel.Settings.ContentPackId))
+            if (!ContentPacks.IsValid(_viewModel.Settings.ContentPackId)) await ChooseContentPackAsync();
+
+            if (ContentPacks.IsValid(_viewModel.Settings.ContentPackId))
             {
-                await ChooseContentPackAsync();
-                return;
+                if (_startMinimized && _mainWindow is not null)
+                {
+                    _mainWindow.HideToTray();
+                    UpdateTrayVisibilityText();
+                }
+                if (_viewModel.Settings.ContentUpdateMode != ContentUpdateMode.ManualOnly && IsAutomaticCheckDue())
+                    await CheckCurrentPackAsync(ContentCheckReason.Automatic);
             }
 
-            if (_viewModel.Settings.ContentUpdateMode != ContentUpdateMode.ManualOnly && IsAutomaticCheckDue())
-                await CheckCurrentPackAsync(ContentCheckReason.Automatic);
+            if (IsApplicationUpdateCheckDue())
+                await CheckApplicationUpdateAsync(ApplicationUpdateCheckReason.Automatic);
         }
         catch (Exception exception)
         {
@@ -162,6 +195,12 @@ public partial class App : Application
     {
         if (_pendingPlan is not null) await ReviewPendingPlanAsync();
         else await CheckCurrentPackAsync(ContentCheckReason.Manual);
+    }
+
+    private async void MainWindow_ApplicationUpdateCheckRequested(object? sender, EventArgs e)
+    {
+        if (_availableApplicationUpdate is not null) await ShowApplicationUpdateAsync(_availableApplicationUpdate);
+        else await CheckApplicationUpdateAsync(ApplicationUpdateCheckReason.Manual);
     }
 
     private async Task MainWindow_ContentUpdateModeChangeRequested(int requestedIndex)
@@ -202,8 +241,10 @@ public partial class App : Application
 
     private async void ContentCheckTimer_OnTick(object? sender, EventArgs e)
     {
-        if (_viewModel?.Settings.ContentUpdateMode == ContentUpdateMode.ManualOnly || !IsAutomaticCheckDue()) return;
-        await CheckCurrentPackAsync(ContentCheckReason.Automatic);
+        if (_viewModel?.Settings.ContentUpdateMode != ContentUpdateMode.ManualOnly && IsAutomaticCheckDue())
+            await CheckCurrentPackAsync(ContentCheckReason.Automatic);
+        if (IsApplicationUpdateCheckDue())
+            await CheckApplicationUpdateAsync(ApplicationUpdateCheckReason.Automatic);
     }
 
     private bool IsAutomaticCheckDue()
@@ -214,6 +255,66 @@ public partial class App : Application
         if (lastSuccess is not null && now - lastSuccess.Value < AutomaticCheckInterval) return false;
         var lastAttempt = _viewModel.Settings.LastContentCheckAttemptUtc;
         return lastAttempt is null || now - lastAttempt.Value >= FailedCheckRetryInterval;
+    }
+
+    private bool IsApplicationUpdateCheckDue()
+    {
+        if (_viewModel is null || _viewModel.IsApplicationUpdateBusy) return false;
+        var lastCheck = _viewModel.Settings.LastApplicationUpdateCheckUtc;
+        return lastCheck is null || DateTimeOffset.UtcNow - lastCheck.Value >= ApplicationUpdateCheckInterval;
+    }
+
+    private async Task CheckApplicationUpdateAsync(ApplicationUpdateCheckReason reason)
+    {
+        if (_viewModel is null || _applicationUpdateService is null || _viewModel.IsApplicationUpdateBusy) return;
+        try
+        {
+            _viewModel.SetApplicationUpdateState("Checking GitHub Releases…", true);
+            var result = await _applicationUpdateService.CheckAsync(includePrereleases: true);
+            _viewModel.MarkApplicationUpdateCheckSucceeded();
+            _availableApplicationUpdate = result.AvailableUpdate;
+            if (_availableApplicationUpdate is null)
+            {
+                _viewModel.SetApplicationUpdateState($"Version {result.CurrentVersion} is up to date.");
+                UpdateTrayApplicationText();
+                if (reason == ApplicationUpdateCheckReason.Manual)
+                    ShowNotice("Earth Wallpaper is up to date", $"You are using version {result.CurrentVersion}.");
+                return;
+            }
+
+            _viewModel.SetApplicationUpdateState($"Version {_availableApplicationUpdate.Version} is available.");
+            UpdateTrayApplicationText($"Application update {_availableApplicationUpdate.Version}");
+            AppLog.Info("application_update_available", "A new application release is available.", new
+            {
+                currentVersion = result.CurrentVersion,
+                availableVersion = _availableApplicationUpdate.Version,
+                _availableApplicationUpdate.IsPrerelease,
+            });
+            if (reason == ApplicationUpdateCheckReason.Manual)
+                await ShowApplicationUpdateAsync(_availableApplicationUpdate);
+            else
+                ShowNotice("Earth Wallpaper update available", $"Version {_availableApplicationUpdate.Version} is ready. Open the tray menu to review it.");
+        }
+        catch (Exception exception)
+        {
+            _viewModel.SetApplicationUpdateState($"Version {ApplicationVersion.Display} · update check failed.");
+            AppLog.Warning("application_update_check_failed", "GitHub Releases could not be checked.", new { exception = exception.GetType().Name, exception.Message });
+            if (reason == ApplicationUpdateCheckReason.Manual)
+                ShowNotice("Application update check failed", "GitHub Releases could not be reached. Try again later.");
+        }
+    }
+
+    private async Task ShowApplicationUpdateAsync(ApplicationUpdateInfo update)
+    {
+        if (_mainWindow is null) return;
+        if (!_mainWindow.IsVisible) _mainWindow.ShowFromTray();
+        await new ApplicationUpdateWindow(update).ShowDialog<bool>(_mainWindow);
+    }
+
+    private void UpdateTrayApplicationText(string? text = null)
+    {
+        if (_trayApplicationUpdateItem is not null)
+            _trayApplicationUpdateItem.Header = text ?? "Check for application updates";
     }
 
     private async Task ChooseContentPackAsync()
@@ -454,6 +555,12 @@ public partial class App : Application
     }
 
     private enum ContentCheckReason
+    {
+        Manual,
+        Automatic,
+    }
+
+    private enum ApplicationUpdateCheckReason
     {
         Manual,
         Automatic,

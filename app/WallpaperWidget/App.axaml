@@ -17,6 +17,7 @@
                         <NativeMenuItem Header="Next wallpaper" Click="TrayNext_OnClick" />
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Header="Check for content updates" Click="TrayContentUpdate_OnClick" />
+                        <NativeMenuItem Header="Check for application updates" Click="TrayApplicationUpdate_OnClick" />
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Header="Exit" Click="TrayExit_OnClick" />
                     </NativeMenu>

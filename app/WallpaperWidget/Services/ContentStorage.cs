@@ -9,10 +9,7 @@ public sealed class ContentStorage
 
     public ContentStorage(string? rootPath = null)
     {
-        RootPath = rootPath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "EarthWallpaperPrototype",
-            "content");
+        RootPath = rootPath ?? AppPaths.ContentPath;
     }
 
     public string RootPath { get; }

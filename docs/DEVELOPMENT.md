@@ -71,4 +71,4 @@ The double-clickable `publish-to-r2.cmd` uses the interactive safe path. Deploym
 
 ## Logs and local application data
 
-The current prototype uses `%LOCALAPPDATA%/EarthWallpaperPrototype/`. Stage 6 will migrate this directory to `%LOCALAPPDATA%/EarthWallpaper/` while preserving settings and cached assets.
+The packaged application uses `%LOCALAPPDATA%/EarthWallpaper/`. On first launch it moves the former `%LOCALAPPDATA%/EarthWallpaperPrototype/` directory when possible, preserving settings and cached assets without another content download.
