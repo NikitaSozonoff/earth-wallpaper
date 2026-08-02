@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WallpaperWidget.ViewModels"
+        x:Class="WallpaperWidget.Views.DetailsWindow"
+        x:DataType="vm:MainViewModel"
+        Title="{Binding CurrentTitle}"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="720"
+        Height="720"
+        MinWidth="520"
+        MinHeight="480"
+        WindowStartupLocation="CenterScreen"
+        Background="#15181D">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" Padding="30,26,30,22" Background="#1D2128" BorderBrush="#22FFFFFF" BorderThickness="0,0,0,1">
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding LocationLine}" FontSize="11" FontWeight="SemiBold" Foreground="#94A0AE" LetterSpacing="1.1" />
+                <TextBlock Text="{Binding CurrentTitle}" FontSize="30" FontWeight="SemiBold" Foreground="#F7F8FA" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <TextBlock Text="{Binding CoordinateLine}" FontSize="12" Foreground="#9AA5B2" />
+                    <TextBlock Text="{Binding ImageryLine}" FontSize="12" Foreground="#9AA5B2" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Padding="30,26" HorizontalScrollBarVisibility="Disabled">
+            <TextBlock Text="{Binding CurrentDescription}"
+                       FontSize="15"
+                       LineHeight="23"
+                       Foreground="#D7DCE2"
+                       TextWrapping="Wrap" />
+        </ScrollViewer>
+
+        <Border Grid.Row="2" Padding="22,16" Background="#1D2128" BorderBrush="#22FFFFFF" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <TextBlock Text="{Binding SourceLine}" FontSize="11" Foreground="#7F8A97" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="Open source" IsEnabled="{Binding HasSource}" Click="OpenSource_OnClick" />
+                <Button Grid.Column="2" Content="Close" Click="Close_OnClick" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

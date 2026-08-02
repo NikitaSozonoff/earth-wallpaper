@@ -1,0 +1,49 @@
+# Private/local content sources
+content/source-images/
+content/publish/
+data/*.xlsx
+data/source-backups/
+data/.~lock.*
+~$*.xlsx
+*.xlsx#
+
+# Publisher state and deployment credentials
+publisher/state/
+publisher/*.local.json
+publisher/deploy.config.json
+.env
+.env.*
+!.env.example
+*secret*
+*credentials*
+
+# Generated application and installer output
+outputs/
+artifacts/
+installer/output/
+*.nupkg
+*.snupkg
+
+# .NET build products
+**/bin/
+**/obj/
+TestResults/
+coverage/
+
+# Local tooling, editors and operating-system files
+.codex-tmp/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.rsuser
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore projects
+        run: |
+          dotnet restore app/WallpaperWidget/WallpaperWidget.csproj
+          dotnet restore publisher/WallpaperPublisher/WallpaperPublisher.csproj
+          dotnet restore tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj
+
+      - name: Build application
+        run: dotnet build app/WallpaperWidget/WallpaperWidget.csproj -c Release --no-restore
+
+      - name: Build publisher
+        run: dotnet build publisher/WallpaperPublisher/WallpaperPublisher.csproj -c Release --no-restore
+
+      - name: Run offline recovery smoke test
+        run: dotnet run --project tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj -c Release --no-restore -- --resume-only

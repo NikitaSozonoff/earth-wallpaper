@@ -1,0 +1,198 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WallpaperWidget.ViewModels"
+        x:Class="WallpaperWidget.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Earth Wallpaper"
+        Icon="/Assets/avalonia-logo.ico"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        CanMinimize="False"
+        CanMaximize="False"
+        ShowInTaskbar="False"
+        Topmost="False"
+        WindowStartupLocation="Manual">
+
+    <Viewbox Width="{Binding WidgetWidth}" Stretch="Uniform">
+        <Grid Width="{Binding BasePanelWidth}" Margin="18">
+        <Border Padding="20,16"
+                CornerRadius="18"
+                Background="{Binding PanelBrush}"
+                BorderBrush="{Binding PanelBorderBrush}"
+                BorderThickness="{Binding PanelBorderThickness}"
+                PointerPressed="WidgetCard_OnPointerPressed">
+            <Grid RowDefinitions="Auto,Auto,Auto">
+                <Grid Grid.Row="0">
+                    <StackPanel Margin="0,0,82,0"
+                                VerticalAlignment="Center"
+                                IsVisible="{Binding LocationVisible}">
+                        <TextBlock Text="{Binding LocationLine}"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="#AEB6C2"
+                                   LetterSpacing="1.2"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding CounterText}"
+                                   Margin="0,3,0,0"
+                                   FontSize="10"
+                                   Foreground="#77818E" />
+                    </StackPanel>
+
+                    <Grid Width="70"
+                          Height="52"
+                          RowDefinitions="32,20"
+                          HorizontalAlignment="{Binding ControlsAlignment}">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6">
+                            <Button Classes="IconButton" ToolTip.Tip="Open place details" IsEnabled="{Binding HasDescription}" Click="Details_OnClick">
+                                <PathIcon Width="17" Height="17" Data="M11 17h2v-6h-2v6zm1-15a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-11h2V7h-2v2z" />
+                            </Button>
+                            <Button Classes="IconButton" ToolTip.Tip="Widget settings">
+                            <PathIcon Width="17" Height="17" Data="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.38-.31-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98L14.5 2.42C14.47 2.18 14.25 2 14 2h-4c-.25 0-.47.18-.5.42l-.38 2.65c-.61.25-1.17.58-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.25.42.5.42h4c.25 0 .47-.18.5-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z" />
+                            <Button.Flyout>
+                                <Flyout Placement="BottomEdgeAlignedRight">
+                                    <Border Width="330" MaxHeight="760" Padding="18" CornerRadius="14" Background="#FA1B1E24" BorderBrush="#30FFFFFF" BorderThickness="1">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel Spacing="12" Margin="0,0,5,0">
+                                            <TextBlock Text="WIDGET SETTINGS" FontSize="11" FontWeight="Bold" Foreground="#97A2B0" LetterSpacing="1.2" />
+
+                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                                <StackPanel Spacing="8">
+                                                    <TextBlock Text="DISPLAY" Classes="SectionLabel" />
+                                                    <CheckBox Content="Show location" IsChecked="{Binding ShowLocation, Mode=TwoWay}" />
+                                                    <CheckBox Content="Show title" IsChecked="{Binding ShowTitle, Mode=TwoWay}" />
+                                                    <CheckBox Content="Show short description" IsChecked="{Binding ShowShortDescription, Mode=TwoWay}" />
+                                                    <CheckBox Content="Show navigation buttons" IsChecked="{Binding ShowNavigationControls, Mode=TwoWay}" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Spacing="6" Margin="0,25,0,0">
+                                                    <Button Classes="PresetButton" Content="Full" Click="FullLayout_OnClick" />
+                                                    <Button Classes="PresetButton" Content="Title" Click="TitleLayout_OnClick" />
+                                                    <Button Classes="PresetButton" Content="Minimal" Click="ControlsLayout_OnClick" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
+
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="CONTROLS &amp; ROTATION" Classes="SectionLabel" />
+                                                <CheckBox Content="Change wallpaper automatically" IsChecked="{Binding AutoRotateEnabled, Mode=TwoWay}" />
+                                                <ComboBox ItemsSource="{Binding RotationIntervalOptions}"
+                                                          SelectedIndex="{Binding RotationIntervalIndex, Mode=TwoWay}"
+                                                          IsEnabled="{Binding AutoRotateEnabled}" />
+                                                <TextBlock Text="{Binding RotationStatusText}" FontSize="11" Foreground="#8E99A6" />
+                                            </StackPanel>
+
+                                            <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
+
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="CONTENT UPDATES" Classes="SectionLabel" />
+                                                <ComboBox x:Name="ContentUpdateModeCombo"
+                                                          ItemsSource="{Binding ContentUpdateModeOptions}"
+                                                          SelectedIndex="{Binding ContentUpdateModeIndex, Mode=OneWay}"
+                                                          IsEnabled="{Binding ContentUpdateControlsEnabled}"
+                                                          SelectionChanged="ContentUpdateMode_OnSelectionChanged" />
+                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                                    <Button Grid.Column="0" Classes="MenuButton"
+                                                            Content="Check now"
+                                                            IsEnabled="{Binding ContentUpdateControlsEnabled}"
+                                                            Click="CheckContentUpdates_OnClick" />
+                                                    <Button Grid.Column="1" Classes="MenuButton"
+                                                            Content="Download update"
+                                                            IsVisible="{Binding PendingUpdateButtonVisible}"
+                                                            IsEnabled="{Binding ContentUpdateControlsEnabled}"
+                                                            Click="InstallContentUpdate_OnClick" />
+                                                </Grid>
+                                                <TextBlock Text="{Binding ContentUpdateStatusText}"
+                                                           FontSize="11" LineHeight="15" Foreground="#8E99A6"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
+
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="APPEARANCE" Classes="SectionLabel" />
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <TextBlock Text="Scale" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding ScaleLabel}" Foreground="#AEB6C2" />
+                                                </Grid>
+                                                <Slider Minimum="0.75" Maximum="1.55" Value="{Binding WidgetScale, Mode=TwoWay}" />
+                                                <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                                                    <TextBlock Text="Background opacity" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding OpacityLabel}" Foreground="#AEB6C2" />
+                                                </Grid>
+                                                <Slider Minimum="0.62" Maximum="0.96" Value="{Binding PanelOpacity, Mode=TwoWay}" />
+                                            </StackPanel>
+
+                                            <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
+
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="ACTIONS" Classes="SectionLabel" />
+                                                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,2">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Wallpaper collection" FontSize="12" Foreground="#C4CBD4" />
+                                                        <TextBlock Text="{Binding ContentPackLabel}" FontSize="11" Foreground="#8E99A6" />
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Classes="PresetButton" Content="Change" Click="ChangeContentPack_OnClick" />
+                                                </Grid>
+                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                                    <Button Grid.Column="0" Classes="MenuButton" Content="Move widget" Click="EditPosition_OnClick" />
+                                                    <Button Grid.Column="1" Classes="MenuButton" Content="Hide to tray" Click="HideWidget_OnClick" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Flyout>
+                            </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                        <Grid Grid.Row="1"
+                              ColumnDefinitions="32,6,32"
+                              Margin="0,4,0,0"
+                              IsVisible="{Binding NavigationVisible}">
+                            <Button Grid.Column="0" Classes="NavigationButton" ToolTip.Tip="Previous wallpaper" Click="Previous_OnClick">
+                                <Path Width="6" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 6,0 L 1,5 L 6,10" Stroke="#8C96A2" StrokeThickness="1.35" />
+                            </Button>
+                            <Button Grid.Column="2" Classes="NavigationButton" ToolTip.Tip="Next wallpaper" Click="Next_OnClick">
+                                <Path Width="6" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0,0 L 5,5 L 0,10" Stroke="#8C96A2" StrokeThickness="1.35" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <TextBlock Grid.Row="1"
+                           Margin="0,8,0,0"
+                           IsVisible="{Binding TitleVisible}"
+                           Text="{Binding CurrentTitle}"
+                           FontSize="23"
+                           FontWeight="SemiBold"
+                           Foreground="#F7F8FA"
+                           TextWrapping="Wrap"
+                           MaxLines="2" />
+
+                <TextBlock Grid.Row="2"
+                           Margin="0,8,0,0"
+                           IsVisible="{Binding DescriptionVisible}"
+                           Text="{Binding CurrentShortDescription}"
+                           FontSize="12"
+                           LineHeight="17"
+                           Foreground="#C4CBD4"
+                           TextWrapping="Wrap"
+                           MaxLines="3"
+                           TextTrimming="CharacterEllipsis" />
+            </Grid>
+        </Border>
+        <Button Classes="FinishEditButton"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,-10,-10,0"
+                ToolTip.Tip="Finish moving"
+                IsVisible="{Binding EditorVisible}"
+                Click="FinishEditing_OnClick">
+            <PathIcon Width="13" Height="13" Data="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+        </Button>
+        </Grid>
+    </Viewbox>
+</Window>

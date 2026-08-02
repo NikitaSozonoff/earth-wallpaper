@@ -1,0 +1,25 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WallpaperWidget.Views.AutomaticDownloadsConfirmationWindow"
+        Title="Automatic content downloads"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="440"
+        Height="285"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#15181D">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="28">
+        <StackPanel Spacing="7">
+            <TextBlock Text="AUTOMATIC DOWNLOADS" FontSize="10" FontWeight="Bold" Foreground="#8FA1B8" LetterSpacing="1.2" />
+            <TextBlock Text="Download future content without asking?" FontSize="22" FontWeight="SemiBold" Foreground="#F7F8FA" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Margin="0,18" Spacing="10">
+            <TextBlock Text="Future collections can be large. Earth Wallpaper will check once a day and download additions in the background without showing a size confirmation each time." FontSize="12" LineHeight="18" Foreground="#AEB6C2" TextWrapping="Wrap" />
+            <TextBlock Text="You can return to notifications or manual updates at any time." FontSize="11" Foreground="#7F8995" TextWrapping="Wrap" />
+        </StackPanel>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Button Grid.Column="1" Content="Cancel" Padding="15,8" Click="Cancel_OnClick" />
+            <Button Grid.Column="2" Content="Yes, I understand" Padding="15,8" Background="#426FAE" Click="Confirm_OnClick" />
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WallpaperWidget.Views.ContentDownloadConfirmationWindow"
+        Title="Confirm content download"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="460"
+        Height="310"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#15181D">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="28">
+        <StackPanel Grid.Row="0" Spacing="7">
+            <TextBlock Text="CONTENT DOWNLOAD" FontSize="10" FontWeight="Bold" Foreground="#8FA1B8" LetterSpacing="1.2" />
+            <TextBlock x:Name="HeadingText" FontSize="23" FontWeight="SemiBold" Foreground="#F7F8FA" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Margin="0,20,0,18" Spacing="10">
+            <Border Padding="14" CornerRadius="10" Background="#22262D" BorderBrush="#28FFFFFF" BorderThickness="1">
+                <StackPanel Spacing="5">
+                    <TextBlock x:Name="SizeText" FontSize="18" FontWeight="SemiBold" Foreground="#A9C8FF" />
+                    <TextBlock x:Name="PlacesText" FontSize="12" Foreground="#AEB6C2" />
+                </StackPanel>
+            </Border>
+            <TextBlock x:Name="ExplanationText" FontSize="12" LineHeight="18" Foreground="#AAB3BE" TextWrapping="Wrap" />
+            <TextBlock Text="The previous working collection will remain available if the download is interrupted." FontSize="11" Foreground="#77818E" TextWrapping="Wrap" />
+        </StackPanel>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Button Grid.Column="1" Content="Not now" Padding="15,8" Click="Cancel_OnClick" />
+            <Button Grid.Column="2" x:Name="ConfirmButton" Padding="15,8" Background="#426FAE" Click="Confirm_OnClick" />
+        </Grid>
+    </Grid>
+</Window>

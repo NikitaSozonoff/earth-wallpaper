@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="WallpaperWidget.Views.ContentNoticeWindow"
+        Title="Earth Wallpaper"
+        Width="360"
+        Height="112"
+        CanResize="False"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        WindowStartupLocation="Manual">
+    <Border Margin="8" Padding="16,13" CornerRadius="13" Background="#F21B1E24" BorderBrush="#45FFFFFF" BorderThickness="1">
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="5">
+                <TextBlock x:Name="TitleText" FontSize="13" FontWeight="SemiBold" Foreground="#F5F7FA" />
+                <TextBlock x:Name="MessageText" FontSize="11" LineHeight="16" Foreground="#AEB7C2" TextWrapping="Wrap" MaxLines="2" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="×" Width="28" Height="28" Padding="0" Background="Transparent" BorderThickness="0" Foreground="#8D98A5" Click="Close_OnClick" />
+        </Grid>
+    </Border>
+</Window>

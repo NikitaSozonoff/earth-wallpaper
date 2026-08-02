@@ -1,0 +1,96 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="WallpaperWidget.App"
+             xmlns:local="using:WallpaperWidget"
+             RequestedThemeVariant="Dark"
+             Name="Earth Wallpaper">
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="Earth Wallpaper">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Hide widget" Click="TrayVisibility_OnClick" />
+                        <NativeMenuItem Header="Next wallpaper" Click="TrayNext_OnClick" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Check for content updates" Click="TrayContentUpdate_OnClick" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Exit" Click="TrayExit_OnClick" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <Style Selector="Button.IconButton">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Background" Value="#18FFFFFF" />
+            <Setter Property="BorderBrush" Value="#22FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F3F5F7" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.IconButton:pointerover">
+            <Setter Property="Background" Value="#30FFFFFF" />
+            <Setter Property="BorderBrush" Value="#50FFFFFF" />
+        </Style>
+        <Style Selector="Button.NavigationButton">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="17" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Opacity" Value="0.62" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.NavigationButton:pointerover">
+            <Setter Property="Background" Value="#0CFFFFFF" />
+            <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="Button.MenuButton">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="CornerRadius" Value="9" />
+        </Style>
+        <Style Selector="Button.PresetButton">
+            <Setter Property="MinWidth" Value="70" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="Button.FinishEditButton">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Background" Value="#F076A7FF" />
+            <Setter Property="BorderBrush" Value="#E8D8E7FF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.FinishEditButton:pointerover">
+            <Setter Property="Background" Value="#FF8CB6FF" />
+        </Style>
+        <Style Selector="TextBlock.SectionLabel">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#7F8A97" />
+            <Setter Property="LetterSpacing" Value="1" />
+        </Style>
+    </Application.Styles>
+</Application>

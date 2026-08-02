@@ -1,0 +1,9 @@
+{
+  "workbookPath": "../data/Wallpaper catalog.xlsx",
+  "worksheet": "Export",
+  "sourceImagesPath": "../content/source-images",
+  "outputPath": "../content/publish",
+  "statePath": "state",
+  "requireReadyValidation": false,
+  "shortDescriptionMaxLength": 220
+}
