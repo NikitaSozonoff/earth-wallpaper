@@ -8,6 +8,7 @@ public sealed class PublisherConfig
     public string Worksheet { get; init; } = "Export";
     public string SourceImagesPath { get; init; } = "../content/source-images";
     public string OutputPath { get; init; } = "../content/publish";
+    public string? BundledCatalogPath { get; init; } = "../app/WallpaperWidget/Data/catalog.json";
     public string StatePath { get; init; } = "state";
     public bool RequireReadyValidation { get; init; }
     public int ShortDescriptionMaxLength { get; init; } = 220;
@@ -29,6 +30,7 @@ public sealed class PublisherConfig
             Worksheet,
             ResolvePath(basePath, SourceImagesPath),
             ResolvePath(basePath, OutputPath),
+            string.IsNullOrWhiteSpace(BundledCatalogPath) ? null : ResolvePath(basePath, BundledCatalogPath),
             ResolvePath(basePath, StatePath),
             RequireReadyValidation,
             Math.Clamp(ShortDescriptionMaxLength, 100, 400));
@@ -43,6 +45,7 @@ public sealed record ResolvedPublisherConfig(
     string Worksheet,
     string SourceImagesPath,
     string OutputPath,
+    string? BundledCatalogPath,
     string StatePath,
     bool RequireReadyValidation,
     int ShortDescriptionMaxLength);

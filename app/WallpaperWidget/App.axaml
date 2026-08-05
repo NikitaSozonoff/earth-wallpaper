@@ -8,6 +8,23 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ControlTheme x:Key="SettingsFlyoutPresenterTheme" TargetType="FlyoutPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Application.Resources>
+
     <TrayIcon.Icons>
         <TrayIcons>
             <TrayIcon Icon="/Assets/avalonia-logo.ico" ToolTipText="Earth Wallpaper">
@@ -72,26 +89,15 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="FontSize" Value="12" />
         </Style>
-        <Style Selector="Button.FinishEditButton">
-            <Setter Property="Width" Value="24" />
-            <Setter Property="Height" Value="24" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Background" Value="#F076A7FF" />
-            <Setter Property="BorderBrush" Value="#E8D8E7FF" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-        </Style>
-        <Style Selector="Button.FinishEditButton:pointerover">
-            <Setter Property="Background" Value="#FF8CB6FF" />
-        </Style>
         <Style Selector="TextBlock.SectionLabel">
             <Setter Property="FontSize" Value="10" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Foreground" Value="#7F8A97" />
             <Setter Property="LetterSpacing" Value="1" />
+        </Style>
+        <Style Selector="SelectableTextBlock">
+            <Setter Property="SelectionBrush" Value="#B04A78B8" />
+            <Setter Property="SelectionForegroundBrush" Value="#FFFFFF" />
         </Style>
     </Application.Styles>
 </Application>

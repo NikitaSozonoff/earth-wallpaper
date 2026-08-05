@@ -15,7 +15,7 @@ Earth Wallpaper is a lightweight desktop widget that changes the Windows wallpap
 - resumable HTTP Range downloads with size and SHA-256 validation;
 - atomic catalog activation and recovery through the previous working release;
 - shared content-addressed cache between collections;
-- tray controls and local structured logs.
+- tray controls and local structured logs;
 - optional Windows startup registration;
 - daily GitHub Releases checks for application updates;
 - per-user installer, clean uninstall and settings/content preservation across upgrades.
@@ -42,6 +42,8 @@ Cloudflare R2 carries wallpaper content. GitHub carries source code and applicat
 ## Installation
 
 Download `EarthWallpaper-Setup-<version>.exe` from [GitHub Releases](https://github.com/NikitaSozonoff/earth-wallpaper/releases). Installation is per-user and does not require administrator privileges. The portable ZIP is provided for testing without installation.
+
+Release packages are self-contained: users do not need to install the .NET SDK or Runtime. The SDK listed below is required only for building the project from source.
 
 Application updates are checked against public GitHub Releases once per day and can also be checked manually in widget settings or from the tray menu. The application opens the new installer in the browser; installation remains a visible user-confirmed action.
 

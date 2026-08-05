@@ -43,11 +43,12 @@ All local paths and validation policy are in `publisher.config.json`. Paths are 
 - `worksheet`: input sheet; normally `Export`.
 - `sourceImagesPath`: original image directory.
 - `outputPath`: Cloudflare-ready static directory.
+- `bundledCatalogPath`: optional tracked fallback catalog copied into the application from the generated `all` pack.
 - `statePath`: local logs and reports; never upload this directory.
 - `requireReadyValidation`: when `true`, only rows with `Validation = Ready` are published.
 - `shortDescriptionMaxLength`: maximum length of a short description derived from the full description.
 
-The current workbook has no `Ready` rows yet, so `requireReadyValidation` is temporarily `false`. Turn it on when the table is fully curated.
+`requireReadyValidation` is enabled for release builds: only rows marked `Ready` are allowed into either content pack.
 
 ## R2 deployment configuration
 

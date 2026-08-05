@@ -16,7 +16,7 @@ The installer contains the self-contained `win-x64` application and does not bun
 ## Local verification
 
 ```powershell
-.\scripts\build-release.ps1 -Version 0.1.0-beta.1 -RequireInstaller
+.\scripts\build-release.ps1 -Version 0.1.0-beta.2 -RequireInstaller
 ```
 
 The script publishes the app, removes debugging symbols, runs the packaged smoke-test, builds the ZIP and installer, and writes SHA-256 checksums under `artifacts/release/<version>/`.
@@ -28,7 +28,7 @@ Inno Setup is required only for a local installer build. GitHub Actions installs
 After Stage 6 changes are committed, pushed, and CI is green, double-click `scripts/start-beta-release.cmd` or run:
 
 ```powershell
-.\scripts\start-github-release.ps1 -Version 0.1.0-beta.1
+.\scripts\start-github-release.ps1 -Version 0.1.0-beta.2
 ```
 
 The script requires a clean `main` branch and the explicit word `RELEASE`, then creates and pushes the version tag. GitHub Actions builds and publishes the release. Do not create the tag until the exact commit is ready to distribute.

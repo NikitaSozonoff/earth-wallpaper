@@ -3,7 +3,8 @@
   "worksheet": "Export",
   "sourceImagesPath": "../content/source-images",
   "outputPath": "../content/publish",
+  "bundledCatalogPath": "../app/WallpaperWidget/Data/catalog.json",
   "statePath": "state",
-  "requireReadyValidation": false,
+  "requireReadyValidation": true,
   "shortDescriptionMaxLength": 220
 }

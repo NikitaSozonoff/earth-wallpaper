@@ -4,10 +4,12 @@ public sealed class WidgetSettings
 {
     public string? ContentPackId { get; set; }
     public int CurrentIndex { get; set; }
+    public string? CurrentPlaceId { get; set; }
     public bool ShowLocation { get; set; } = true;
     public bool ShowTitle { get; set; } = true;
     public bool ShowShortDescription { get; set; } = true;
     public bool ShowNavigationControls { get; set; } = true;
+    public bool PositionLocked { get; set; }
     public bool AutoRotateEnabled { get; set; }
     public int RotationMinutes { get; set; } = 1440;
     public ContentUpdateMode ContentUpdateMode { get; set; } = ContentUpdateMode.NotifyAutomatically;

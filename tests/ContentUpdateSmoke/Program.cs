@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using WallpaperWidget.Models;
@@ -8,6 +9,7 @@ using WallpaperWidget.Services;
 if (!args.Contains("--resume-only", StringComparer.OrdinalIgnoreCase))
     await CheckPublishedCatalogsAsync();
 CheckApplicationVersions();
+CheckRandomizedPlaybackOrder();
 await CheckApplicationUpdateDiscoveryAsync();
 await CheckResumableInstallAsync();
 
@@ -24,6 +26,30 @@ static void CheckApplicationVersions()
             throw new InvalidOperationException($"Version ordering failed: {ordered[index - 1]} >= {ordered[index]}");
     }
     Console.WriteLine("application versions: prerelease and stable ordering verified");
+}
+
+static void CheckRandomizedPlaybackOrder()
+{
+    var entries = Enumerable.Range(0, 12)
+        .Select(index => new PlaceEntry { Id = $"place-{index}", Title = $"Place {index}", ImageFile = $"{index}.jpg" })
+        .ToArray();
+    var shuffle = typeof(WallpaperWidget.ViewModels.MainViewModel).GetMethod(
+        "ShuffleEntries",
+        BindingFlags.NonPublic | BindingFlags.Static)
+        ?? throw new InvalidOperationException("Random playback helper was not found.");
+
+    var preferred = (IReadOnlyList<PlaceEntry>)shuffle.Invoke(null, [entries, "place-5", null])!;
+    if (preferred[0].Id != "place-5" || preferred.Select(entry => entry.Id).Distinct().Count() != entries.Length)
+        throw new InvalidOperationException("Random playback did not preserve a complete unique cycle or preferred first place.");
+
+    for (var attempt = 0; attempt < 20; attempt++)
+    {
+        var nextCycle = (IReadOnlyList<PlaceEntry>)shuffle.Invoke(null, [entries, null, "place-5"])!;
+        if (nextCycle[0].Id == "place-5" || nextCycle.Select(entry => entry.Id).Distinct().Count() != entries.Length)
+            throw new InvalidOperationException("Random playback repeated the boundary place or lost an entry.");
+    }
+
+    Console.WriteLine("playback order: shuffled cycle is unique and avoids an immediate boundary repeat");
 }
 
 static async Task CheckApplicationUpdateDiscoveryAsync()

@@ -23,6 +23,13 @@ public sealed class ExcelCatalogReader
             return Clean(row.Cell(column).GetFormattedString());
         }
 
+        string OptionalText(IXLRow row, string name)
+        {
+            return columns.TryGetValue(name, out var column)
+                ? Clean(row.Cell(column).GetFormattedString())
+                : string.Empty;
+        }
+
         double Number(IXLRow row, string name)
         {
             var raw = Text(row, name);
@@ -55,7 +62,7 @@ public sealed class ExcelCatalogReader
                 Number(row, "Latitude"),
                 Number(row, "Longitude"),
                 OptionalInteger(row, "Zoom"),
-                Text(row, "Source URL"),
+                OptionalText(row, "Source URL"),
                 Text(row, "Image filename"),
                 Text(row, "Image status"),
                 Text(row, "Imagery date"),

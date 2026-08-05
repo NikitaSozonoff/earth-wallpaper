@@ -1,6 +1,7 @@
 # Private/local content sources
 content/source-images/
 content/publish/
+content/editorial/
 data/*.xlsx
 data/source-backups/
 data/.~lock.*
@@ -32,6 +33,10 @@ coverage/
 
 # Local tooling, editors and operating-system files
 .codex-tmp/
+AGENTS.md
+Подбор-мест.txt
+Создание-карточки.txt
+Редакционный-процесс.txt
 .vs/
 .vscode/
 .idea/

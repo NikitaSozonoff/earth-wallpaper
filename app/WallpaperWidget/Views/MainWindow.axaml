@@ -29,12 +29,12 @@
                     <StackPanel Margin="0,0,82,0"
                                 VerticalAlignment="Center"
                                 IsVisible="{Binding LocationVisible}">
-                        <TextBlock Text="{Binding LocationLine}"
-                                   FontSize="10"
-                                   FontWeight="SemiBold"
-                                   Foreground="#AEB6C2"
-                                   LetterSpacing="1.2"
-                                   TextTrimming="CharacterEllipsis" />
+                        <SelectableTextBlock Text="{Binding LocationLine}"
+                                             FontSize="10"
+                                             FontWeight="SemiBold"
+                                             Foreground="#AEB6C2"
+                                             LetterSpacing="1.2"
+                                             TextTrimming="CharacterEllipsis" />
                         <TextBlock Text="{Binding CounterText}"
                                    Margin="0,3,0,0"
                                    FontSize="10"
@@ -52,10 +52,11 @@
                             <Button Classes="IconButton" ToolTip.Tip="Widget settings">
                             <PathIcon Width="17" Height="17" Data="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.38-.31-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98L14.5 2.42C14.47 2.18 14.25 2 14 2h-4c-.25 0-.47.18-.5.42l-.38 2.65c-.61.25-1.17.58-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.12.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.38.31.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.25.42.5.42h4c.25 0 .47-.18.5-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z" />
                             <Button.Flyout>
-                                <Flyout Placement="BottomEdgeAlignedRight">
+                                <Flyout Placement="BottomEdgeAlignedRight"
+                                        FlyoutPresenterTheme="{StaticResource SettingsFlyoutPresenterTheme}">
                                     <Border Width="330" MaxHeight="760" Padding="18" CornerRadius="14" Background="#FA1B1E24" BorderBrush="#30FFFFFF" BorderThickness="1">
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                        <StackPanel Spacing="12" Margin="0,0,5,0">
+                                        <StackPanel Spacing="12" Margin="0,0,14,0">
                                             <TextBlock Text="WIDGET SETTINGS" FontSize="11" FontWeight="Bold" Foreground="#97A2B0" LetterSpacing="1.2" />
 
                                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
@@ -123,6 +124,9 @@
                                                     <TextBlock Grid.Column="1" Text="{Binding OpacityLabel}" Foreground="#AEB6C2" />
                                                 </Grid>
                                                 <Slider Minimum="0.62" Maximum="0.96" Value="{Binding PanelOpacity, Mode=TwoWay}" />
+                                                <CheckBox Margin="0,4,0,0"
+                                                          Content="Lock widget position"
+                                                          IsChecked="{Binding PositionLocked, Mode=TwoWay}" />
                                             </StackPanel>
 
                                             <Border Height="1" Background="#18FFFFFF" Margin="0,2" />
@@ -154,10 +158,7 @@
                                                     </StackPanel>
                                                     <Button Grid.Column="1" Classes="PresetButton" Content="Change" Click="ChangeContentPack_OnClick" />
                                                 </Grid>
-                                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                                    <Button Grid.Column="0" Classes="MenuButton" Content="Move widget" Click="EditPosition_OnClick" />
-                                                    <Button Grid.Column="1" Classes="MenuButton" Content="Hide to tray" Click="HideWidget_OnClick" />
-                                                </Grid>
+                                                <Button Classes="MenuButton" Content="Hide to tray" Click="HideWidget_OnClick" />
                                             </StackPanel>
                                         </StackPanel>
                                         </ScrollViewer>
@@ -180,37 +181,37 @@
                     </Grid>
                 </Grid>
 
-                <TextBlock Grid.Row="1"
-                           Margin="0,8,0,0"
-                           IsVisible="{Binding TitleVisible}"
-                           Text="{Binding CurrentTitle}"
-                           FontSize="23"
-                           FontWeight="SemiBold"
-                           Foreground="#F7F8FA"
-                           TextWrapping="Wrap"
-                           MaxLines="2" />
+                <SelectableTextBlock Grid.Row="1"
+                                     Margin="0,8,0,0"
+                                     IsVisible="{Binding TitleVisible}"
+                                     Text="{Binding CurrentTitle}"
+                                     FontSize="23"
+                                     FontWeight="SemiBold"
+                                     Foreground="#F7F8FA"
+                                     TextWrapping="Wrap"
+                                     MaxLines="2" />
 
-                <TextBlock Grid.Row="2"
-                           Margin="0,8,0,0"
-                           IsVisible="{Binding DescriptionVisible}"
-                           Text="{Binding CurrentShortDescription}"
-                           FontSize="12"
-                           LineHeight="17"
-                           Foreground="#C4CBD4"
-                           TextWrapping="Wrap"
-                           MaxLines="3"
-                           TextTrimming="CharacterEllipsis" />
+                <SelectableTextBlock Grid.Row="2"
+                                     Margin="0,8,0,0"
+                                     IsVisible="{Binding CuratedShortDescriptionVisible}"
+                                     Text="{Binding CurrentShortDescription}"
+                                     FontSize="12"
+                                     LineHeight="17"
+                                     Foreground="#C4CBD4"
+                                     TextWrapping="Wrap" />
+
+                <SelectableTextBlock Grid.Row="2"
+                                     Margin="0,8,0,0"
+                                     IsVisible="{Binding DescriptionFallbackVisible}"
+                                     Text="{Binding CurrentShortDescription}"
+                                     FontSize="12"
+                                     LineHeight="17"
+                                     Foreground="#C4CBD4"
+                                     TextWrapping="Wrap"
+                                     MaxLines="3"
+                                     TextTrimming="CharacterEllipsis" />
             </Grid>
         </Border>
-        <Button Classes="FinishEditButton"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Margin="0,-10,-10,0"
-                ToolTip.Tip="Finish moving"
-                IsVisible="{Binding EditorVisible}"
-                Click="FinishEditing_OnClick">
-            <PathIcon Width="13" Height="13" Data="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-        </Button>
         </Grid>
     </Viewbox>
 </Window>

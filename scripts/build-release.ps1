@@ -44,7 +44,27 @@ $packagedExecutable = Join-Path $publishPath "EarthWallpaper.exe"
 & $packagedExecutable --smoke-test
 if ($LASTEXITCODE -ne 0) { throw "Packaged application smoke test failed with exit code $LASTEXITCODE." }
 
-Compress-Archive -Path (Join-Path $publishPath "*") -DestinationPath $portablePath -CompressionLevel Optimal
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archiveAttempts = 5
+for ($attempt = 1; $attempt -le $archiveAttempts; $attempt++)
+{
+    try
+    {
+        if (Test-Path -LiteralPath $portablePath) { Remove-Item -LiteralPath $portablePath -Force }
+        [System.IO.Compression.ZipFile]::CreateFromDirectory(
+            $publishPath,
+            $portablePath,
+            [IO.Compression.CompressionLevel]::Optimal,
+            $false)
+        break
+    }
+    catch
+    {
+        if ($attempt -eq $archiveAttempts) { throw }
+        Write-Warning "Portable archive creation failed; retrying ($attempt/$archiveAttempts): $($_.Exception.Message)"
+        Start-Sleep -Seconds 2
+    }
+}
 
 $isccCommand = Get-Command ISCC.exe -CommandType Application -ErrorAction SilentlyContinue
 $iscc = if ($null -ne $isccCommand) { $isccCommand.Source } else { $null }

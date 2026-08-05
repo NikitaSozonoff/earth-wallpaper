@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using System.Globalization;
 using WallpaperWidget.Models;
 using WallpaperWidget.Services;
 
@@ -18,7 +19,6 @@ public sealed class MainViewModel : ViewModelBase
     private readonly DispatcherTimer _rotationTimer;
     private static readonly int[] RotationMinuteValues = [1, 15, 30, 60, 360, 1440];
     private int _currentIndex;
-    private bool _isEditing;
     private string _statusMessage = "Use the arrows to set a wallpaper.";
     private string _contentUpdateStatusText = "Content has not been checked yet.";
     private bool _hasPendingContentUpdate;
@@ -34,14 +34,22 @@ public sealed class MainViewModel : ViewModelBase
         AutostartService autostartService,
         WidgetSettings settings)
     {
-        _entries = entries.Count > 0 ? entries : throw new InvalidOperationException("The catalog contains no usable places.");
+        if (entries.Count == 0) throw new InvalidOperationException("The catalog contains no usable places.");
         _catalogService = catalogService;
         _settingsService = settingsService;
         _wallpaperService = wallpaperService;
         _autostartService = autostartService;
         _settings = settings;
         _settings.LaunchAtStartup = autostartService.IsEnabled();
-        _currentIndex = Math.Clamp(settings.CurrentIndex, 0, _entries.Count - 1);
+        var previousPlaceId = !string.IsNullOrWhiteSpace(settings.CurrentPlaceId)
+            ? settings.CurrentPlaceId
+            : settings.CurrentIndex > 0
+                ? entries[Math.Clamp(settings.CurrentIndex, 0, entries.Count - 1)].Id
+                : null;
+        _entries = ShuffleEntries(entries, preferredFirstId: previousPlaceId);
+        _currentIndex = 0;
+        _settings.CurrentIndex = 0;
+        _settings.CurrentPlaceId = CurrentPlace.Id;
         _rotationTimer = new DispatcherTimer();
         _rotationTimer.Tick += (_, _) => Next();
         UpdateRotationTimer();
@@ -49,12 +57,18 @@ public sealed class MainViewModel : ViewModelBase
         {
             _contentUpdateStatusText = $"Last checked {settings.LastContentCheckUtc.Value.ToLocalTime():g}";
         }
+        Save();
     }
 
     public PlaceEntry CurrentPlace => _entries[_currentIndex];
     public string CurrentTitle => CurrentPlace.Title;
     public string LocationLine => string.Join(" · ", new[] { CurrentPlace.Country, CurrentPlace.Region }.Where(value => !string.IsNullOrWhiteSpace(value)));
-    public string CurrentShortDescription => CurrentPlace.ShortDescription ?? "Explore the landscape and story behind this place.";
+    public bool HasShortDescription => !string.IsNullOrWhiteSpace(CurrentPlace.ShortDescription);
+    public string CurrentShortDescription => HasShortDescription
+        ? CurrentPlace.ShortDescription!.Trim()
+        : !string.IsNullOrWhiteSpace(CurrentPlace.Description)
+            ? CurrentPlace.Description.Trim()
+            : "Explore the landscape and story behind this place.";
     public string CurrentDescription => CurrentPlace.Description ?? "A detailed description has not been added yet.";
     public string CoordinateLine => $"{CurrentPlace.Latitude:0.000000}, {CurrentPlace.Longitude:0.000000}";
     public string ImageryLine => string.IsNullOrWhiteSpace(CurrentPlace.ImageryDate)
@@ -62,6 +76,12 @@ public sealed class MainViewModel : ViewModelBase
         : $"Imagery: {CurrentPlace.ImageryDate}";
     public string SourceLine => CurrentPlace.SourceUrl ?? "Source link not recorded";
     public bool HasSource => Uri.TryCreate(CurrentPlace.SourceUrl, UriKind.Absolute, out _);
+    public string ExternalLinkLabel => HasSource ? "Open source" : "Open location";
+    public string ExternalLinkUrl => HasSource
+        ? CurrentPlace.SourceUrl!
+        : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString($"{CurrentPlace.Latitude.ToString("R", CultureInfo.InvariantCulture)},{CurrentPlace.Longitude.ToString("R", CultureInfo.InvariantCulture)}")}";
+    public bool HasExternalLink => HasSource ||
+        (CurrentPlace.Latitude is >= -90 and <= 90 && CurrentPlace.Longitude is >= -180 and <= 180);
     public bool HasDescription => !string.IsNullOrWhiteSpace(CurrentPlace.Description);
     public string CounterText => $"{_currentIndex + 1} / {_entries.Count}";
 
@@ -113,6 +133,18 @@ public sealed class MainViewModel : ViewModelBase
             _settings.ShowNavigationControls = value;
             OnPropertyChanged();
             NotifyLayoutChanged();
+            Save();
+        }
+    }
+
+    public bool PositionLocked
+    {
+        get => _settings.PositionLocked;
+        set
+        {
+            if (_settings.PositionLocked == value) return;
+            _settings.PositionLocked = value;
+            OnPropertyChanged();
             Save();
         }
     }
@@ -205,20 +237,6 @@ public sealed class MainViewModel : ViewModelBase
         }
     }
 
-    public bool IsEditing
-    {
-        get => _isEditing;
-        set
-        {
-            if (SetProperty(ref _isEditing, value))
-            {
-                OnPropertyChanged(nameof(EditorVisible));
-                OnPropertyChanged(nameof(PanelBorderBrush));
-                OnPropertyChanged(nameof(PanelBorderThickness));
-            }
-        }
-    }
-
     public string StatusMessage
     {
         get => _statusMessage;
@@ -275,8 +293,9 @@ public sealed class MainViewModel : ViewModelBase
     public bool LocationVisible => ShowLocation && !string.IsNullOrWhiteSpace(LocationLine);
     public bool TitleVisible => ShowTitle;
     public bool DescriptionVisible => ShowShortDescription;
+    public bool CuratedShortDescriptionVisible => DescriptionVisible && HasShortDescription;
+    public bool DescriptionFallbackVisible => DescriptionVisible && !HasShortDescription;
     public bool NavigationVisible => ShowNavigationControls;
-    public bool EditorVisible => IsEditing;
     public HorizontalAlignment ControlsAlignment => ControlsOnly
         ? HorizontalAlignment.Center
         : HorizontalAlignment.Right;
@@ -315,15 +334,22 @@ public sealed class MainViewModel : ViewModelBase
         ? LaunchAtStartup ? "Starts hidden in the notification area." : "Disabled."
         : "Available in the installed Windows application.";
     public IBrush PanelBrush => new SolidColorBrush(Color.FromArgb((byte)(PanelOpacity * 255), 22, 25, 31));
-    public IBrush PanelBorderBrush => new SolidColorBrush(IsEditing
-        ? Color.FromArgb(230, 118, 167, 255)
-        : Color.FromArgb(50, 255, 255, 255));
-    public Thickness PanelBorderThickness => new(IsEditing ? 2 : 1);
+    public IBrush PanelBorderBrush => new SolidColorBrush(Color.FromArgb(50, 255, 255, 255));
+    public Thickness PanelBorderThickness => new(1);
     public WidgetSettings Settings => _settings;
 
     public void Next()
     {
-        _currentIndex = (_currentIndex + 1) % _entries.Count;
+        if (_currentIndex >= _entries.Count - 1)
+        {
+            var previousId = CurrentPlace.Id;
+            _entries = ShuffleEntries(_entries, avoidFirstId: previousId);
+            _currentIndex = 0;
+        }
+        else
+        {
+            _currentIndex++;
+        }
         ChangeCurrentPlace();
         ApplyCurrentWallpaper();
     }
@@ -375,6 +401,7 @@ public sealed class MainViewModel : ViewModelBase
         if (_settings.ContentPackId == packId) return;
         _settings.ContentPackId = packId;
         _settings.CurrentIndex = 0;
+        _settings.CurrentPlaceId = null;
         OnPropertyChanged(nameof(ContentPackLabel));
         Save();
     }
@@ -433,11 +460,13 @@ public sealed class MainViewModel : ViewModelBase
     {
         if (entries.Count == 0) return;
         var currentId = CurrentPlace.Id;
-        _entries = entries;
-        var matchingIndex = entries.Select((entry, index) => (entry, index))
-            .FirstOrDefault(item => item.entry.Id.Equals(currentId, StringComparison.OrdinalIgnoreCase));
-        _currentIndex = matchingIndex.entry is null ? 0 : matchingIndex.index;
-        _settings.CurrentIndex = _currentIndex;
+        var preferredFirstId = entries.Any(entry => entry.Id.Equals(currentId, StringComparison.OrdinalIgnoreCase))
+            ? currentId
+            : null;
+        _entries = ShuffleEntries(entries, preferredFirstId: preferredFirstId);
+        _currentIndex = 0;
+        _settings.CurrentIndex = 0;
+        _settings.CurrentPlaceId = CurrentPlace.Id;
         NotifyCurrentPlaceChanged();
         StatusMessage = statusMessage;
         Save();
@@ -446,8 +475,35 @@ public sealed class MainViewModel : ViewModelBase
     private void ChangeCurrentPlace()
     {
         _settings.CurrentIndex = _currentIndex;
+        _settings.CurrentPlaceId = CurrentPlace.Id;
         NotifyCurrentPlaceChanged();
         Save();
+    }
+
+    private static IReadOnlyList<PlaceEntry> ShuffleEntries(
+        IReadOnlyList<PlaceEntry> entries,
+        string? preferredFirstId = null,
+        string? avoidFirstId = null)
+    {
+        var shuffled = entries.ToArray();
+        Random.Shared.Shuffle(shuffled);
+
+        if (!string.IsNullOrWhiteSpace(preferredFirstId))
+        {
+            var preferredIndex = Array.FindIndex(shuffled,
+                entry => entry.Id.Equals(preferredFirstId, StringComparison.OrdinalIgnoreCase));
+            if (preferredIndex > 0)
+                (shuffled[0], shuffled[preferredIndex]) = (shuffled[preferredIndex], shuffled[0]);
+        }
+
+        if (shuffled.Length > 1 && !string.IsNullOrWhiteSpace(avoidFirstId) &&
+            shuffled[0].Id.Equals(avoidFirstId, StringComparison.OrdinalIgnoreCase))
+        {
+            var swapIndex = Random.Shared.Next(1, shuffled.Length);
+            (shuffled[0], shuffled[swapIndex]) = (shuffled[swapIndex], shuffled[0]);
+        }
+
+        return shuffled;
     }
 
     private void NotifyCurrentPlaceChanged()
@@ -456,7 +512,9 @@ public sealed class MainViewModel : ViewModelBase
         {
             nameof(CurrentPlace), nameof(CurrentTitle), nameof(LocationLine), nameof(CurrentShortDescription),
             nameof(CurrentDescription), nameof(CoordinateLine), nameof(ImageryLine), nameof(SourceLine),
-            nameof(HasSource), nameof(HasDescription), nameof(CounterText), nameof(LocationVisible),
+            nameof(HasSource), nameof(HasExternalLink), nameof(ExternalLinkLabel), nameof(ExternalLinkUrl),
+            nameof(HasDescription), nameof(HasShortDescription), nameof(CounterText),
+            nameof(LocationVisible), nameof(CuratedShortDescriptionVisible), nameof(DescriptionFallbackVisible),
         })
         {
             OnPropertyChanged(property);
@@ -468,6 +526,7 @@ public sealed class MainViewModel : ViewModelBase
         foreach (var property in new[]
         {
             nameof(ControlsOnly), nameof(LocationVisible), nameof(TitleVisible), nameof(DescriptionVisible),
+            nameof(CuratedShortDescriptionVisible), nameof(DescriptionFallbackVisible),
             nameof(NavigationVisible), nameof(ControlsAlignment), nameof(BasePanelWidth), nameof(WidgetWidth),
         })
         {

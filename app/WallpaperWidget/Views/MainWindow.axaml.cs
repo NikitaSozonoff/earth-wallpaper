@@ -83,18 +83,6 @@ public partial class MainWindow : Window
     private void FullLayout_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => _viewModel.UseFullLayout();
     private void TitleLayout_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => _viewModel.UseTitleLayout();
     private void ControlsLayout_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => _viewModel.UseControlsLayout();
-    private void EditPosition_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        _viewModel.IsEditing = true;
-        Cursor = new Cursor(StandardCursorType.SizeAll);
-    }
-    private void FinishEditing_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        _viewModel.IsEditing = false;
-        Cursor = new Cursor(StandardCursorType.Arrow);
-        UpdateHorizontalAnchor();
-        ClampToAnchorScreen();
-    }
     private void HideWidget_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => HideToTray();
     private void ChangeContentPack_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ContentPackChangeRequested?.Invoke(this, EventArgs.Empty);
     private void CheckContentUpdates_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => ContentUpdateCheckRequested?.Invoke(this, EventArgs.Empty);
@@ -118,12 +106,12 @@ public partial class MainWindow : Window
 
     private void WidgetCard_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!_viewModel.IsEditing || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        if (_viewModel.PositionLocked || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
 
         var current = e.Source as Visual;
         while (current is not null && current != this)
         {
-            if (current is Button or Slider or CheckBox or ComboBox) return;
+            if (current is Button or Slider or CheckBox or ComboBox or SelectableTextBlock) return;
             current = current.GetVisualParent();
         }
 

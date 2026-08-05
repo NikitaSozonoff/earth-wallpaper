@@ -74,6 +74,11 @@ public sealed partial class PublisherEngine
         var catalogHash = Convert.ToHexString(SHA256.HashData(catalogBytes)).ToLowerInvariant();
         var catalogRelativePath = $"catalogs/catalog-{version}.json";
         WriteAtomic(Path.Combine(_config.OutputPath, catalogRelativePath), catalogBytes);
+        if (packId == "all" && !string.IsNullOrWhiteSpace(_config.BundledCatalogPath))
+        {
+            WriteAtomic(_config.BundledCatalogPath, catalogBytes);
+            _log.Info("bundled_catalog_updated", $"Bundled application catalog updated: {_config.BundledCatalogPath}");
+        }
 
         var manifest = new ContentManifest
         {
