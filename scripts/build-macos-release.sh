@@ -32,6 +32,7 @@ dmg_path="$release_root/EarthWallpaper-macOS-$architecture-$version.dmg"
 contents_path="$app_path/Contents"
 macos_path="$contents_path/MacOS"
 resources_path="$contents_path/Resources"
+frameworks_path="$contents_path/Frameworks"
 entitlements_path="$platform_root/EarthWallpaper.entitlements"
 dmg_stage_path="$release_root/dmg-stage-$architecture"
 
@@ -41,7 +42,7 @@ case "$release_root" in
 esac
 
 rm -rf "$publish_path" "$app_path" "$dmg_path" "$dmg_stage_path"
-mkdir -p "$publish_path" "$macos_path" "$resources_path"
+mkdir -p "$publish_path" "$macos_path" "$resources_path" "$frameworks_path"
 
 echo "Publishing Earth Wallpaper $version (osx-$architecture)..."
 dotnet publish "$project_path" \
@@ -54,6 +55,20 @@ dotnet publish "$project_path" \
 
 find "$publish_path" -type f -name '*.pdb' -delete
 ditto "$publish_path" "$macos_path"
+
+# macOS code signing expects data under Resources and native libraries under
+# Frameworks. Relative links preserve the paths expected by the .NET host.
+if [[ -d "$macos_path/Data" ]]; then
+  ditto "$macos_path/Data" "$resources_path/Data"
+  rm -rf "$macos_path/Data"
+  ln -s ../Resources/Data "$macos_path/Data"
+fi
+for native_library in "$macos_path"/*.dylib; do
+  [[ -e "$native_library" ]] || continue
+  library_name="$(basename "$native_library")"
+  mv "$native_library" "$frameworks_path/$library_name"
+  ln -s "../Frameworks/$library_name" "$macos_path/$library_name"
+done
 
 echo "Compiling native macOS wallpaper helper..."
 swiftc -O \
@@ -88,7 +103,7 @@ while IFS= read -r -d '' candidate; do
   if file "$candidate" | grep -q 'Mach-O'; then
     codesign --force "${signing_timestamp[@]}" --options runtime --sign "$signing_identity" "$candidate"
   fi
-done < <(find "$macos_path" -type f -print0)
+done < <(find "$app_path" -type f -print0)
 
 codesign \
   --force \
