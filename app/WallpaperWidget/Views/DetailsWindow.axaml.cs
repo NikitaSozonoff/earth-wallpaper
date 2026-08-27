@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Avalonia.Controls;
+using WallpaperWidget.Models;
 using WallpaperWidget.ViewModels;
 
 namespace WallpaperWidget.Views;
@@ -21,8 +22,14 @@ public partial class DetailsWindow : Window
 
     private void OpenSource_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (!_viewModel.HasExternalLink) return;
-        Process.Start(new ProcessStartInfo(_viewModel.ExternalLinkUrl) { UseShellExecute = true });
+        if (sender is not Button { DataContext: SourceLink source } || !Uri.TryCreate(source.Url, UriKind.Absolute, out _)) return;
+        Process.Start(new ProcessStartInfo(source.Url) { UseShellExecute = true });
+    }
+
+    private void OpenLocation_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (!_viewModel.HasLocationLink) return;
+        Process.Start(new ProcessStartInfo(_viewModel.LocationLinkUrl) { UseShellExecute = true });
     }
 
     private void Close_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close();

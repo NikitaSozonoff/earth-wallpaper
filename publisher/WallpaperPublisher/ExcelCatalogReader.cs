@@ -30,6 +30,12 @@ public sealed class ExcelCatalogReader
                 : string.Empty;
         }
 
+        string Sources(IXLRow row)
+        {
+            var sources = OptionalText(row, "Sources");
+            return string.IsNullOrWhiteSpace(sources) ? OptionalText(row, "Source URL") : sources;
+        }
+
         double Number(IXLRow row, string name)
         {
             var raw = Text(row, name);
@@ -62,7 +68,7 @@ public sealed class ExcelCatalogReader
                 Number(row, "Latitude"),
                 Number(row, "Longitude"),
                 OptionalInteger(row, "Zoom"),
-                OptionalText(row, "Source URL"),
+                Sources(row),
                 Text(row, "Image filename"),
                 Text(row, "Image status"),
                 Text(row, "Imagery date"),

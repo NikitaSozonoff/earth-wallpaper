@@ -2,7 +2,8 @@
 
 ## Prerequisites
 
-- Windows 10 or 11
+- Windows 10 or 11 for the Windows application and publisher workflow
+- macOS 13 or newer with Xcode command-line tools for `.app`/DMG packaging
 - .NET SDK 10.0.302 (the repository `global.json` accepts newer 10.0 patches)
 - PowerShell 7 or Windows PowerShell
 - Git for Windows
@@ -31,6 +32,18 @@ dotnet run --project tests\ContentUpdateSmoke\ContentUpdateSmoke.csproj -c Relea
 ```
 
 The `--resume-only` test is deterministic and is the one used by GitHub Actions.
+
+The managed application can be cross-published for Apple Silicon from Windows:
+
+```powershell
+dotnet publish app\WallpaperWidget\WallpaperWidget.csproj -c Release -r osx-arm64 --self-contained true -p:IncludeNativeLibrariesForSelfExtract=false
+```
+
+The final bundle needs the native Swift helper, code signing and `hdiutil`, so run the release packaging step on macOS:
+
+```bash
+./scripts/build-macos-release.sh 0.1.0-beta.3 arm64
+```
 
 ## Local-only directories
 
@@ -71,4 +84,4 @@ The double-clickable `publish-to-r2.cmd` uses the interactive safe path. Deploym
 
 ## Logs and local application data
 
-The packaged application uses `%LOCALAPPDATA%/EarthWallpaper/`. On first launch it moves the former `%LOCALAPPDATA%/EarthWallpaperPrototype/` directory when possible, preserving settings and cached assets without another content download.
+The packaged application uses the operating system's local application-data directory under `EarthWallpaper/`. On Windows this is `%LOCALAPPDATA%/EarthWallpaper/`. On first launch it moves the former `EarthWallpaperPrototype/` directory when possible, preserving settings and cached assets without another content download.

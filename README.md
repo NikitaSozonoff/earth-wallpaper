@@ -1,8 +1,8 @@
 # Earth Wallpaper
 
-Earth Wallpaper is a lightweight desktop widget that changes the Windows wallpaper and presents a short educational story about the current place. The overlay can show a location, title and short description, or collapse to minimal controls.
+Earth Wallpaper is a lightweight desktop widget for Windows and macOS that changes the wallpaper and presents a short educational story about the current place. The overlay can show a location, title and short description, or collapse to minimal controls.
 
-> The project is currently in beta. Windows installer and portable packages are produced through GitHub Releases.
+> The project is currently in beta. Windows installer/portable packages and an Apple Silicon macOS disk image are produced through GitHub Releases.
 
 ## Features
 
@@ -16,7 +16,7 @@ Earth Wallpaper is a lightweight desktop widget that changes the Windows wallpap
 - atomic catalog activation and recovery through the previous working release;
 - shared content-addressed cache between collections;
 - tray controls and local structured logs;
-- optional Windows startup registration;
+- optional Windows startup registration (macOS login-item support is planned after beta validation);
 - daily GitHub Releases checks for application updates;
 - per-user installer, clean uninstall and settings/content preservation across upgrades.
 
@@ -41,13 +41,18 @@ Cloudflare R2 carries wallpaper content. GitHub carries source code and applicat
 
 ## Installation
 
-Download `EarthWallpaper-Setup-<version>.exe` from [GitHub Releases](https://github.com/NikitaSozonoff/earth-wallpaper/releases). Installation is per-user and does not require administrator privileges. The portable ZIP is provided for testing without installation.
+Download the package for your operating system from [GitHub Releases](https://github.com/NikitaSozonoff/earth-wallpaper/releases):
+
+- Windows: `EarthWallpaper-Setup-<version>.exe`;
+- macOS on Apple Silicon: `EarthWallpaper-macOS-arm64-<version>.dmg`.
+
+The Windows installation is per-user and does not require administrator privileges. The portable ZIP is provided for Windows testing without installation. The first macOS beta is ad-hoc signed, so Gatekeeper requires a one-time **Open Anyway** confirmation under **System Settings → Privacy & Security**.
 
 Release packages are self-contained: users do not need to install the .NET SDK or Runtime. The SDK listed below is required only for building the project from source.
 
-Application updates are checked against public GitHub Releases once per day and can also be checked manually in widget settings or from the tray menu. The application opens the new installer in the browser; installation remains a visible user-confirmed action.
+Application updates are checked against public GitHub Releases once per day and can also be checked manually in widget settings or from the tray menu. The update window offers explicit Windows and macOS package buttons; installation remains a visible user-confirmed action.
 
-Downloaded wallpapers and settings live in `%LOCALAPPDATA%\EarthWallpaper` and are preserved when the application is upgraded or uninstalled. The first packaged launch migrates the previous `%LOCALAPPDATA%\EarthWallpaperPrototype` directory without downloading the collection again.
+Downloaded wallpapers and settings live in the operating system's local application-data directory under `EarthWallpaper` and are preserved when the application is upgraded. On Windows this is `%LOCALAPPDATA%\EarthWallpaper`. The first packaged launch migrates the previous `EarthWallpaperPrototype` directory without downloading the collection again.
 
 ## Repository layout
 
@@ -62,13 +67,20 @@ Downloaded wallpapers and settings live in `%LOCALAPPDATA%\EarthWallpaper` and a
 
 Requirements:
 
-- Windows 10 or 11;
-- .NET SDK 10.0.302 or a compatible 10.0 patch.
+- Windows 10/11 for Windows development, or macOS 13+ for macOS packaging;
+- .NET SDK 10.0.302 or a compatible 10.0 patch;
+- Xcode command-line tools for the native macOS helper and DMG.
 
 ```powershell
 dotnet build app\WallpaperWidget\WallpaperWidget.csproj -c Release
 dotnet build publisher\WallpaperPublisher\WallpaperPublisher.csproj -c Release
 dotnet run --project tests\ContentUpdateSmoke\ContentUpdateSmoke.csproj -c Release -- --resume-only
+```
+
+On macOS, build an Apple Silicon beta package with:
+
+```bash
+./scripts/build-macos-release.sh 0.1.0-beta.3 arm64
 ```
 
 See [development setup](docs/DEVELOPMENT.md), [content publishing](docs/CONTENT-PUBLISHING.md), and [content update internals](docs/CONTENT-UPDATES.md).

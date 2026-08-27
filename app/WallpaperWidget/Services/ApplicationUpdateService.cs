@@ -39,20 +39,56 @@ public sealed class ApplicationUpdateService
             if (!SemanticVersion.TryParse(release.TagName, out var parsed) || parsed.CompareTo(_currentVersion) <= 0) continue;
             if (newestVersion is not null && parsed.CompareTo(newestVersion.Value) <= 0) continue;
 
-            var setup = release.Assets.FirstOrDefault(asset =>
-                asset.Name.StartsWith("EarthWallpaper-Setup-", StringComparison.OrdinalIgnoreCase) &&
-                asset.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
+            var packages = FindPackages(release.Assets);
             newestVersion = parsed;
             newest = new ApplicationUpdateInfo(
                 parsed.ToString(),
                 string.IsNullOrWhiteSpace(release.Name) ? release.TagName : release.Name,
                 release.HtmlUrl,
-                setup?.BrowserDownloadUrl,
+                packages,
                 release.Body ?? string.Empty,
                 release.Prerelease);
         }
 
         return new ApplicationUpdateCheckResult(_currentVersionDisplay, newest);
+    }
+
+    private static IReadOnlyList<ApplicationUpdatePackage> FindPackages(IEnumerable<GitHubAsset> assets)
+    {
+        var packages = new List<ApplicationUpdatePackage>();
+        foreach (var asset in assets)
+        {
+            if (!Uri.TryCreate(asset.BrowserDownloadUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+                continue;
+
+            if (asset.Name.StartsWith("EarthWallpaper-Setup-", StringComparison.OrdinalIgnoreCase) &&
+                asset.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                packages.Add(new ApplicationUpdatePackage(
+                    ApplicationPackagePlatform.Windows,
+                    "Windows installer (.exe)",
+                    asset.Name,
+                    asset.BrowserDownloadUrl));
+                continue;
+            }
+
+            if (asset.Name.StartsWith("EarthWallpaper-macOS-", StringComparison.OrdinalIgnoreCase) &&
+                asset.Name.EndsWith(".dmg", StringComparison.OrdinalIgnoreCase))
+            {
+                var architecture = asset.Name.Contains("arm64", StringComparison.OrdinalIgnoreCase)
+                    ? "Apple Silicon"
+                    : asset.Name.Contains("x64", StringComparison.OrdinalIgnoreCase)
+                        ? "Intel"
+                        : "macOS";
+                packages.Add(new ApplicationUpdatePackage(
+                    ApplicationPackagePlatform.MacOS,
+                    $"macOS {architecture} (.dmg)",
+                    asset.Name,
+                    asset.BrowserDownloadUrl));
+            }
+        }
+
+        return packages;
     }
 
     private static string SanitizeProductVersion(string value)

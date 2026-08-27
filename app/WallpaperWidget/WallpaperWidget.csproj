@@ -4,11 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\avalonia-logo.ico</ApplicationIcon>
+    <ApplicationManifest Condition="'$(RuntimeIdentifier)' == '' Or $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="'$(RuntimeIdentifier)' == '' Or $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">Assets\avalonia-logo.ico</ApplicationIcon>
     <AssemblyName>EarthWallpaper</AssemblyName>
     <RootNamespace>WallpaperWidget</RootNamespace>
-    <Version>0.1.0-beta.2</Version>
+    <Version>0.1.0-beta.3</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
     <Product>Earth Wallpaper</Product>
@@ -16,7 +16,7 @@
     <RepositoryUrl>https://github.com/NikitaSozonoff/earth-wallpaper</RepositoryUrl>
     <PublishSingleFile Condition="'$(RuntimeIdentifier)' != ''">true</PublishSingleFile>
     <SelfContained Condition="'$(RuntimeIdentifier)' != ''">true</SelfContained>
-    <IncludeNativeLibrariesForSelfExtract Condition="'$(RuntimeIdentifier)' != ''">true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract Condition="$([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">true</IncludeNativeLibrariesForSelfExtract>
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 

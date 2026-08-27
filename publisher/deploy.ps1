@@ -184,6 +184,7 @@ function Test-LocalRelease {
 function Test-PublicRelease {
     param([string]$PublicBaseUrl, [object[]]$ManifestSummaries)
 
+    Add-Type -AssemblyName System.Net.Http
     $http = [System.Net.Http.HttpClient]::new()
     $http.DefaultRequestHeaders.CacheControl = [System.Net.Http.Headers.CacheControlHeaderValue]::new()
     $http.DefaultRequestHeaders.CacheControl.NoCache = $true

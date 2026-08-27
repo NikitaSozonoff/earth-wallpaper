@@ -67,6 +67,10 @@ static async Task CheckApplicationUpdateDiscoveryAsync()
           {
             "name": "EarthWallpaper-Setup-0.1.0-beta.2.exe",
             "browser_download_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/download/v0.1.0-beta.2/EarthWallpaper-Setup-0.1.0-beta.2.exe"
+          },
+          {
+            "name": "EarthWallpaper-macOS-arm64-0.1.0-beta.2.dmg",
+            "browser_download_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/download/v0.1.0-beta.2/EarthWallpaper-macOS-arm64-0.1.0-beta.2.dmg"
           }
         ]
       }
@@ -76,9 +80,11 @@ static async Task CheckApplicationUpdateDiscoveryAsync()
         new StaticJsonHandler(releaseJson),
         currentVersion: "0.1.0-beta.1");
     var result = await service.CheckAsync();
-    if (!result.IsUpdateAvailable || result.AvailableUpdate?.Version != "0.1.0-beta.2" || result.AvailableUpdate.InstallerDownloadUrl is null)
-        throw new InvalidOperationException("GitHub release discovery did not select the newer installer.");
-    Console.WriteLine("application update: newer GitHub prerelease and Setup asset discovered");
+    if (!result.IsUpdateAvailable || result.AvailableUpdate?.Version != "0.1.0-beta.2" ||
+        result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.Windows) is null ||
+        result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.MacOS) is null)
+        throw new InvalidOperationException("GitHub release discovery did not expose both platform packages.");
+    Console.WriteLine("application update: newer GitHub prerelease exposes explicit Windows and macOS packages");
 }
 
 static async Task CheckPublishedCatalogsAsync()

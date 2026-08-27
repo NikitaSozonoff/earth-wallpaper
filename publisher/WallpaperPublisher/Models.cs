@@ -11,7 +11,7 @@ public sealed record SourcePlace(
     double Latitude,
     double Longitude,
     int? Zoom,
-    string SourceUrl,
+    string Sources,
     string ImageFile,
     string ImageStatus,
     string ImageryDate,
@@ -43,6 +43,7 @@ public sealed class PublishedPlace
     public double Longitude { get; init; }
     public int? Zoom { get; init; }
     public string? SourceUrl { get; init; }
+    public List<PublishedSource> Sources { get; init; } = [];
     public string ImageFile { get; init; } = string.Empty;
     public string ImageSha256 { get; init; } = string.Empty;
     public long ImageBytes { get; init; }
@@ -53,6 +54,12 @@ public sealed class PublishedPlace
     public string? Aesthetics { get; init; }
     public string? Story { get; init; }
     public int Revision { get; init; }
+}
+
+public sealed class PublishedSource
+{
+    public string Label { get; init; } = string.Empty;
+    public string Url { get; init; } = string.Empty;
 }
 
 public sealed class ContentManifest

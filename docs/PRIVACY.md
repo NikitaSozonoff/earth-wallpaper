@@ -23,4 +23,4 @@ The application stores these items under the current user's local application-da
 
 Logs include timestamps, release versions, counts, byte totals and exception types. They do not include image contents, credentials or authorization headers. Logs are not uploaded automatically.
 
-Windows may retain its own cached copy of an image after it has been set as the desktop wallpaper. That operating-system copy is outside Earth Wallpaper's cache management.
+The operating system may retain its own cached copy of an image after it has been set as the desktop wallpaper. That copy is outside Earth Wallpaper's cache management.

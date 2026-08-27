@@ -152,9 +152,11 @@ public sealed partial class PublisherEngine
             var hash = HashFile(sourcePath);
             var extension = Path.GetExtension(row.ImageFile).ToLowerInvariant();
             var assetPath = $"assets/{hash[..24]}{extension}";
+            var description = StripCitationMarkers(row.Description);
             var shortDescription = string.IsNullOrWhiteSpace(row.ShortDescription)
-                ? DeriveShortDescription(row.Description, _config.ShortDescriptionMaxLength)
-                : row.ShortDescription;
+                ? DeriveShortDescription(description, _config.ShortDescriptionMaxLength)
+                : StripCitationMarkers(row.ShortDescription);
+            var sources = ParseSources(row.Sources);
 
             entries.Add(new PublishedPlace
             {
@@ -163,11 +165,12 @@ public sealed partial class PublisherEngine
                 Country = NullIfEmpty(row.Country),
                 Region = NullIfEmpty(row.Region),
                 ShortDescription = NullIfEmpty(shortDescription),
-                Description = NullIfEmpty(row.Description),
+                Description = NullIfEmpty(description),
                 Latitude = row.Latitude,
                 Longitude = row.Longitude,
                 Zoom = row.Zoom,
-                SourceUrl = NullIfEmpty(row.SourceUrl),
+                SourceUrl = sources.FirstOrDefault()?.Url,
+                Sources = sources,
                 ImageFile = assetPath,
                 ImageSha256 = hash,
                 ImageBytes = new FileInfo(sourcePath).Length,
@@ -232,6 +235,49 @@ public sealed partial class PublisherEngine
         return singleLine[..cut].TrimEnd(' ', '.', ',', ';', ':') + "…";
     }
 
+    private static List<PublishedSource> ParseSources(string raw)
+    {
+        var parsed = new List<(string Label, string Url)>();
+        foreach (var rawLine in raw.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var line = SourceNumberPattern().Replace(rawLine, string.Empty).Trim();
+            var separator = line.IndexOf('|');
+            var label = separator > 0 ? line[..separator].Trim() : string.Empty;
+            var url = separator > 0 ? line[(separator + 1)..].Trim() : line;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) continue;
+            parsed.Add((string.IsNullOrWhiteSpace(label) ? BuildSourceLabel(uri) : label, uri.AbsoluteUri));
+        }
+
+        var duplicateCounts = parsed.GroupBy(source => source.Label, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.OrdinalIgnoreCase);
+        var seen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        return parsed.Select(source =>
+        {
+            seen[source.Label] = seen.GetValueOrDefault(source.Label) + 1;
+            var label = duplicateCounts[source.Label] > 1 ? $"{source.Label} · {seen[source.Label]}" : source.Label;
+            return new PublishedSource { Label = label, Url = source.Url };
+        }).ToList();
+    }
+
+    private static string BuildSourceLabel(Uri uri)
+    {
+        var host = uri.Host.ToLowerInvariant();
+        if (host.StartsWith("www.", StringComparison.Ordinal)) host = host[4..];
+        if (host == "doi.org") return "DOI";
+        if (host.EndsWith("unesco.org")) return "UNESCO";
+        if (host.EndsWith("fao.org")) return "FAO";
+        if (host.EndsWith("gub.uy")) return "Uruguay government";
+        if (host.EndsWith("ute.com.uy")) return "UTE";
+        if (host.EndsWith("frontiersin.org")) return "Frontiers";
+        if (host.EndsWith("springer.com")) return "Springer";
+        if (host.EndsWith("cambridge.org")) return "Cambridge";
+        if (host.EndsWith("chinadaily.com.cn")) return "China Daily";
+        if (host.EndsWith("people.com.cn")) return "People.cn";
+        return host;
+    }
+
+    private static string StripCitationMarkers(string text) => CitationMarkerPattern().Replace(text, string.Empty);
+
     private static string HashFile(string path)
     {
         using var stream = File.OpenRead(path);
@@ -261,4 +307,10 @@ public sealed partial class PublisherEngine
 
     [GeneratedRegex("\\s+")]
     private static partial Regex WhitespacePattern();
+
+    [GeneratedRegex(@"[ \t]*\[\d+\]")]
+    private static partial Regex CitationMarkerPattern();
+
+    [GeneratedRegex(@"^\[\d+\]\s*")]
+    private static partial Regex SourceNumberPattern();
 }

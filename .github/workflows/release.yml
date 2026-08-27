@@ -4,12 +4,19 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build without publishing a GitHub Release"
+        required: true
+        default: "0.1.0-beta.3"
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  windows-release:
+  windows-build:
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -36,8 +43,88 @@ jobs:
       - name: Build release artifacts
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}".TrimStart("v")
+          $version = if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            "${{ inputs.version }}"
+          } else {
+            "${{ github.ref_name }}".TrimStart("v")
+          }
           ./scripts/build-release.ps1 -Version $version -RequireInstaller
+          New-Item -ItemType Directory -Force artifacts/upload/windows | Out-Null
+          Copy-Item "artifacts/release/$version/*.exe" artifacts/upload/windows/
+          Copy-Item "artifacts/release/$version/*.zip" artifacts/upload/windows/
+
+      - name: Upload Windows release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: artifacts/upload/windows/*
+          if-no-files-found: error
+
+  macos-build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore and test
+        run: |
+          dotnet restore app/WallpaperWidget/WallpaperWidget.csproj -r osx-arm64
+          dotnet restore tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj
+          dotnet run --project tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj -c Release --no-restore -- --resume-only
+
+      - name: Build macOS Apple Silicon release
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          chmod +x scripts/build-macos-release.sh
+          ./scripts/build-macos-release.sh "$version" arm64
+          mkdir -p artifacts/upload/macos
+          cp "artifacts/release/$version/"*.dmg artifacts/upload/macos/
+
+      - name: Upload macOS release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-release
+          path: artifacts/upload/macos/*
+          if-no-files-found: error
+
+  publish-release:
+    if: github.event_name == 'push'
+    needs: [windows-build, macos-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Download platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-release"
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create unified checksums and manifest
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          ./scripts/finalize-release.ps1 -Version $version -ReleaseRoot release-assets
 
       - name: Publish GitHub Release
         shell: pwsh
@@ -46,7 +133,7 @@ jobs:
         run: |
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart("v")
-          $assets = @(Get-ChildItem "artifacts/release/$version" -File | ForEach-Object { $_.FullName })
+          $assets = @(Get-ChildItem "release-assets" -File | ForEach-Object { $_.FullName })
           $arguments = @("release", "create", $tag) + $assets + @("--title", "Earth Wallpaper $version", "--generate-notes")
           if ($version.Contains("-")) { $arguments += "--prerelease" }
           gh @arguments

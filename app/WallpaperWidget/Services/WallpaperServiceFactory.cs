@@ -2,9 +2,12 @@ namespace WallpaperWidget.Services;
 
 public static class WallpaperServiceFactory
 {
-    public static IWallpaperService Create() => OperatingSystem.IsWindows()
-        ? new WindowsWallpaperService()
-        : new UnsupportedWallpaperService();
+    public static IWallpaperService Create()
+    {
+        if (OperatingSystem.IsWindows()) return new WindowsWallpaperService();
+        if (OperatingSystem.IsMacOS()) return new MacOsWallpaperService();
+        return new UnsupportedWallpaperService();
+    }
 
     private sealed class UnsupportedWallpaperService : IWallpaperService
     {

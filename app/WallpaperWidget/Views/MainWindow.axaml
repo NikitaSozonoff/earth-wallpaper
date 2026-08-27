@@ -133,7 +133,7 @@
 
                                             <StackPanel Spacing="8">
                                                 <TextBlock Text="APPLICATION" Classes="SectionLabel" />
-                                                <CheckBox Content="Start with Windows"
+                                                <CheckBox Content="Start at login"
                                                           IsChecked="{Binding LaunchAtStartup, Mode=TwoWay}"
                                                           IsEnabled="{Binding AutostartAvailable}" />
                                                 <TextBlock Text="{Binding AutostartStatusText}"

@@ -12,6 +12,7 @@ public sealed class PlaceEntry
     public double Longitude { get; init; }
     public int? Zoom { get; init; }
     public string? SourceUrl { get; init; }
+    public List<SourceLink> Sources { get; init; } = [];
     public string ImageFile { get; init; } = string.Empty;
     public string? ImageSha256 { get; init; }
     public long? ImageBytes { get; init; }
@@ -22,4 +23,10 @@ public sealed class PlaceEntry
     public string? Story { get; init; }
     public string? Tags { get; init; }
     public int Revision { get; init; } = 1;
+}
+
+public sealed class SourceLink
+{
+    public string Label { get; init; } = string.Empty;
+    public string Url { get; init; } = string.Empty;
 }

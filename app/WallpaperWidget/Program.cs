@@ -7,7 +7,7 @@ namespace WallpaperWidget;
 
 sealed class Program
 {
-    private const string MutexName = @"Local\EarthWallpaper.NikitaSozonoff";
+    private const string MutexName = "EarthWallpaper.NikitaSozonoff";
     private const string ActivationPipeName = "EarthWallpaper.NikitaSozonoff.Activate";
     private static Mutex? _instanceMutex;
 

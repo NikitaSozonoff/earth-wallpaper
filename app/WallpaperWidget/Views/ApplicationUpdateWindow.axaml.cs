@@ -21,24 +21,43 @@ public partial class ApplicationUpdateWindow : Window
         ReleaseNameText.Text = update.ReleaseName;
         ReleaseNotesText.Text = BuildReleaseNotes(update.ReleaseNotes);
         ChannelText.Text = update.IsPrerelease ? "Beta release" : "Stable release";
+        ConfigurePackageButton(WindowsDownloadButton, update.PackageFor(ApplicationPackagePlatform.Windows), "Windows package unavailable");
+        ConfigurePackageButton(MacDownloadButton, update.PackageFor(ApplicationPackagePlatform.MacOS), "macOS package unavailable");
     }
 
     private void Later_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close(false);
+    private void DownloadWindows_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
+        OpenPackage(ApplicationPackagePlatform.Windows);
+    private void DownloadMac_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) =>
+        OpenPackage(ApplicationPackagePlatform.MacOS);
 
-    private void OpenInstaller_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void OpenPackage(ApplicationPackagePlatform platform)
     {
-        var url = _update.InstallerDownloadUrl ?? _update.ReleasePageUrl;
+        var package = _update.PackageFor(platform);
+        var url = package?.DownloadUrl ?? _update.ReleasePageUrl;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return;
         try
         {
             Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-            AppLog.Info("application_update_opened", "The application update download page was opened.", new { _update.Version });
+            AppLog.Info("application_update_opened", "The selected application package was opened.", new
+            {
+                _update.Version,
+                platform,
+                package = package?.FileName,
+            });
             Close(true);
         }
         catch (Exception exception)
         {
             AppLog.Warning("application_update_open_failed", "The application update page could not be opened.", new { exception = exception.GetType().Name });
         }
+    }
+
+    private static void ConfigurePackageButton(Button button, ApplicationUpdatePackage? package, string unavailableText)
+    {
+        button.IsEnabled = package is not null;
+        button.Content = package?.DisplayName ?? unavailableText;
+        ToolTip.SetTip(button, package?.FileName);
     }
 
     private static string BuildReleaseNotes(string notes)

@@ -14,7 +14,7 @@
         </StackPanel>
 
         <TextBlock Grid.Row="1"
-                   Text="Your wallpaper collection and personal settings will be preserved. The installer replaces only the application files."
+                   Text="Choose the application package explicitly. Your wallpaper collection and personal settings will be preserved."
                    FontSize="12" LineHeight="17" Foreground="#C3CAD3" TextWrapping="Wrap" />
 
         <Border Grid.Row="2" Padding="14" CornerRadius="10" Background="#12000000" BorderBrush="#20FFFFFF" BorderThickness="1">
@@ -23,10 +23,25 @@
             </ScrollViewer>
         </Border>
 
-        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-            <TextBlock x:Name="ChannelText" VerticalAlignment="Center" FontSize="11" Foreground="#7F8995" />
-            <Button Grid.Column="1" Content="Later" Padding="18,8" Click="Later_OnClick" />
-            <Button Grid.Column="2" Content="Open installer" Padding="18,8" Classes="accent" Click="OpenInstaller_OnClick" />
+        <Grid Grid.Row="3" RowDefinitions="Auto,Auto" RowSpacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="ChannelText" VerticalAlignment="Center" FontSize="11" Foreground="#7F8995" />
+                <Button Grid.Column="1" Content="Later" Padding="18,8" Click="Later_OnClick" />
+            </Grid>
+            <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button x:Name="WindowsDownloadButton"
+                        Grid.Column="0"
+                        Content="Download for Windows"
+                        Padding="14,9"
+                        Classes="accent"
+                        Click="DownloadWindows_OnClick" />
+                <Button x:Name="MacDownloadButton"
+                        Grid.Column="1"
+                        Content="Download for macOS"
+                        Padding="14,9"
+                        Classes="accent"
+                        Click="DownloadMac_OnClick" />
+            </Grid>
         </Grid>
     </Grid>
 </Window>

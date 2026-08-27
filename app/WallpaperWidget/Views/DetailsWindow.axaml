@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:WallpaperWidget.ViewModels"
+        xmlns:models="using:WallpaperWidget.Models"
         x:Class="WallpaperWidget.Views.DetailsWindow"
         x:DataType="vm:MainViewModel"
         Title="{Binding CurrentTitle}"
@@ -31,11 +32,33 @@
                                  TextWrapping="Wrap" />
         </ScrollViewer>
 
-        <Border Grid.Row="2" Padding="22,16" Background="#1D2128" BorderBrush="#22FFFFFF" BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                <SelectableTextBlock Text="{Binding SourceLine}" FontSize="11" Foreground="#7F8A97" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Content="{Binding ExternalLinkLabel}" IsEnabled="{Binding HasExternalLink}" Click="OpenSource_OnClick" />
-                <Button Grid.Column="2" Content="Close" Click="Close_OnClick" />
+        <Border Grid.Row="2" Padding="22,14" Background="#1D2128" BorderBrush="#22FFFFFF" BorderThickness="0,1,0,0">
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
+                <Grid IsVisible="{Binding HasSources}" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <TextBlock Text="Sources:" FontSize="11" Foreground="#7F8A97" VerticalAlignment="Center" />
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding CurrentSources}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:SourceLink">
+                                <Button Content="{Binding Label}"
+                                        Padding="10,5"
+                                        Margin="0,0,8,6"
+                                        FontSize="11"
+                                        ToolTip.Tip="{Binding Url}"
+                                        Click="OpenSource_OnClick" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                    <Button Content="Open location" IsEnabled="{Binding HasLocationLink}" Click="OpenLocation_OnClick" />
+                    <Button Content="Close" Click="Close_OnClick" />
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

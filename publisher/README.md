@@ -6,26 +6,27 @@ Publisher converts the `Export` worksheet and the original images into a static,
 
 1. Replace or update `../data/Wallpaper catalog.xlsx`.
 2. Add new original JPEG files to `../content/source-images/`.
-3. Run a validation without creating a release:
+3. Keep citation markers out of `Short description` and `Full description`. Store URLs separately in `Sources`, one per line. Use `Short label | URL` when a clear label is known; legacy `[1] URL` lines are also accepted.
+4. Run a validation without creating a release:
 
    ```powershell
    .\publish.ps1 -ValidateOnly
    ```
 
-4. Read `state/reports/latest-validation.json`. Errors stop the build; warnings are listed but currently allowed.
-5. Build the release:
+5. Read `state/reports/latest-validation.json`. Errors stop the build; warnings are listed but currently allowed.
+6. Build the release:
 
    ```powershell
    .\publish.ps1
    ```
 
-6. Preview the R2 deployment:
+7. Preview the R2 deployment:
 
    ```powershell
    .\deploy.ps1 -DryRun
    ```
 
-7. Publish after reviewing the plan:
+8. Publish after reviewing the plan:
 
    ```powershell
    .\deploy.ps1

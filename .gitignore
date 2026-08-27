@@ -2,6 +2,7 @@
 content/source-images/
 content/publish/
 content/editorial/
+content/new candidates/
 data/*.xlsx
 data/source-backups/
 data/.~lock.*
@@ -33,6 +34,7 @@ coverage/
 
 # Local tooling, editors and operating-system files
 .codex-tmp/
+.codex-work/
 AGENTS.md
 Подбор-мест.txt
 Создание-карточки.txt

@@ -494,17 +494,30 @@ public partial class App : Application
     private async Task InstallPlanAsync(ContentUpdatePlan plan)
     {
         if (_contentUpdateService is null || _catalogService is null || _viewModel is null) return;
+        ContentDownloadProgressWindow? progressWindow = null;
         await _contentUpdateLock.WaitAsync();
         try
         {
             _pendingPlan = null;
             UpdateTrayContentText("Downloading content…");
             _viewModel.SetContentUpdateState("Preparing content download…", false, true);
-            var progress = new Progress<ContentDownloadProgress>(value => _viewModel.SetContentUpdateProgress(value));
+            if (_mainWindow is not null)
+            {
+                progressWindow = new ContentDownloadProgressWindow(plan);
+                progressWindow.Show(_mainWindow);
+                _mainWindow.IsEnabled = false;
+            }
+            var progress = new Progress<ContentDownloadProgress>(value =>
+            {
+                _viewModel.SetContentUpdateProgress(value);
+                progressWindow?.Report(value);
+            });
             var result = await Task.Run(() => _contentUpdateService.InstallAsync(plan, progress));
+            progressWindow?.ShowFinishing();
             var entries = _catalogService.Load();
             _viewModel.SetContentPack(plan.PackId);
             _viewModel.ReplaceEntries(entries, result.Message);
+            _viewModel.ApplyCurrentWallpaper();
             _viewModel.SetContentUpdateState(result.Message, false);
             UpdateTrayContentText();
             ShowNotice("Wallpaper content updated", result.Message);
@@ -516,6 +529,8 @@ public partial class App : Application
         }
         finally
         {
+            if (_mainWindow is not null) _mainWindow.IsEnabled = true;
+            progressWindow?.FinishAndClose();
             _contentUpdateLock.Release();
         }
     }

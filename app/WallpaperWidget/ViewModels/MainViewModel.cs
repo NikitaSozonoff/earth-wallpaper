@@ -74,14 +74,24 @@ public sealed class MainViewModel : ViewModelBase
     public string ImageryLine => string.IsNullOrWhiteSpace(CurrentPlace.ImageryDate)
         ? "Imagery date not recorded"
         : $"Imagery: {CurrentPlace.ImageryDate}";
-    public string SourceLine => CurrentPlace.SourceUrl ?? "Source link not recorded";
-    public bool HasSource => Uri.TryCreate(CurrentPlace.SourceUrl, UriKind.Absolute, out _);
-    public string ExternalLinkLabel => HasSource ? "Open source" : "Open location";
-    public string ExternalLinkUrl => HasSource
-        ? CurrentPlace.SourceUrl!
-        : $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString($"{CurrentPlace.Latitude.ToString("R", CultureInfo.InvariantCulture)},{CurrentPlace.Longitude.ToString("R", CultureInfo.InvariantCulture)}")}";
-    public bool HasExternalLink => HasSource ||
-        (CurrentPlace.Latitude is >= -90 and <= 90 && CurrentPlace.Longitude is >= -180 and <= 180);
+    public IReadOnlyList<SourceLink> CurrentSources
+    {
+        get
+        {
+            var sources = CurrentPlace.Sources?
+                .Where(source => !string.IsNullOrWhiteSpace(source.Label) && Uri.TryCreate(source.Url, UriKind.Absolute, out _))
+                .ToArray() ?? [];
+            if (sources.Length > 0) return sources;
+            return Uri.TryCreate(CurrentPlace.SourceUrl, UriKind.Absolute, out _)
+                ? [new SourceLink { Label = "Source", Url = CurrentPlace.SourceUrl! }]
+                : [];
+        }
+    }
+    public bool HasSources => CurrentSources.Count > 0;
+    public string LocationLinkUrl =>
+        $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString($"{CurrentPlace.Latitude.ToString("R", CultureInfo.InvariantCulture)},{CurrentPlace.Longitude.ToString("R", CultureInfo.InvariantCulture)}")}";
+    public bool HasLocationLink =>
+        CurrentPlace.Latitude is >= -90 and <= 90 && CurrentPlace.Longitude is >= -180 and <= 180;
     public bool HasDescription => !string.IsNullOrWhiteSpace(CurrentPlace.Description);
     public string CounterText => $"{_currentIndex + 1} / {_entries.Count}";
 
@@ -176,7 +186,7 @@ public sealed class MainViewModel : ViewModelBase
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(AutostartStatusText));
                 Save();
-                AppLog.Info("autostart_changed", value ? "Start with Windows enabled." : "Start with Windows disabled.");
+                AppLog.Info("autostart_changed", value ? "Start at login enabled." : "Start at login disabled.");
             }
             catch (Exception exception)
             {
@@ -332,7 +342,9 @@ public sealed class MainViewModel : ViewModelBase
     public bool AutostartAvailable => _autostartService.IsSupported;
     public string AutostartStatusText => AutostartAvailable
         ? LaunchAtStartup ? "Starts hidden in the notification area." : "Disabled."
-        : "Available in the installed Windows application.";
+        : OperatingSystem.IsMacOS()
+            ? "Startup registration is not included in the first macOS beta."
+            : "Available in the installed Windows application.";
     public IBrush PanelBrush => new SolidColorBrush(Color.FromArgb((byte)(PanelOpacity * 255), 22, 25, 31));
     public IBrush PanelBorderBrush => new SolidColorBrush(Color.FromArgb(50, 255, 255, 255));
     public Thickness PanelBorderThickness => new(1);
@@ -511,8 +523,8 @@ public sealed class MainViewModel : ViewModelBase
         foreach (var property in new[]
         {
             nameof(CurrentPlace), nameof(CurrentTitle), nameof(LocationLine), nameof(CurrentShortDescription),
-            nameof(CurrentDescription), nameof(CoordinateLine), nameof(ImageryLine), nameof(SourceLine),
-            nameof(HasSource), nameof(HasExternalLink), nameof(ExternalLinkLabel), nameof(ExternalLinkUrl),
+            nameof(CurrentDescription), nameof(CoordinateLine), nameof(ImageryLine), nameof(CurrentSources),
+            nameof(HasSources), nameof(HasLocationLink), nameof(LocationLinkUrl),
             nameof(HasDescription), nameof(HasShortDescription), nameof(CounterText),
             nameof(LocationVisible), nameof(CuratedShortDescriptionVisible), nameof(DescriptionFallbackVisible),
         })
