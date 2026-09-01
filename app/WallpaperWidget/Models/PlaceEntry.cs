@@ -30,3 +30,10 @@ public sealed class SourceLink
     public string Label { get; init; } = string.Empty;
     public string Url { get; init; } = string.Empty;
 }
+
+public sealed class SourceDisplayLink
+{
+    public string DisplayUrl { get; init; } = string.Empty;
+    public string Url { get; init; } = string.Empty;
+    public string Separator { get; init; } = string.Empty;
+}

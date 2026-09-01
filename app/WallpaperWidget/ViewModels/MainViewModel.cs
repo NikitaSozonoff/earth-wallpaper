@@ -74,17 +74,24 @@ public sealed class MainViewModel : ViewModelBase
     public string ImageryLine => string.IsNullOrWhiteSpace(CurrentPlace.ImageryDate)
         ? "Imagery date not recorded"
         : $"Imagery: {CurrentPlace.ImageryDate}";
-    public IReadOnlyList<SourceLink> CurrentSources
+    public IReadOnlyList<SourceDisplayLink> CurrentSources
     {
         get
         {
-            var sources = CurrentPlace.Sources?
-                .Where(source => !string.IsNullOrWhiteSpace(source.Label) && Uri.TryCreate(source.Url, UriKind.Absolute, out _))
+            var sourceUrls = CurrentPlace.Sources?
+                .Select(source => source.Url)
+                .Where(IsWebUrl)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray() ?? [];
-            if (sources.Length > 0) return sources;
-            return Uri.TryCreate(CurrentPlace.SourceUrl, UriKind.Absolute, out _)
-                ? [new SourceLink { Label = "Source", Url = CurrentPlace.SourceUrl! }]
-                : [];
+            if (sourceUrls.Length == 0 && IsWebUrl(CurrentPlace.SourceUrl))
+                sourceUrls = [CurrentPlace.SourceUrl!];
+
+            return sourceUrls.Select((url, index) => new SourceDisplayLink
+            {
+                DisplayUrl = BuildSourceDisplayUrl(url),
+                Url = url,
+                Separator = index < sourceUrls.Length - 1 ? "," : string.Empty,
+            }).ToArray();
         }
     }
     public bool HasSources => CurrentSources.Count > 0;
@@ -94,6 +101,15 @@ public sealed class MainViewModel : ViewModelBase
         CurrentPlace.Latitude is >= -90 and <= 90 && CurrentPlace.Longitude is >= -180 and <= 180;
     public bool HasDescription => !string.IsNullOrWhiteSpace(CurrentPlace.Description);
     public string CounterText => $"{_currentIndex + 1} / {_entries.Count}";
+
+    private static bool IsWebUrl(string? value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+
+    private static string BuildSourceDisplayUrl(string url)
+    {
+        var uri = new Uri(url, UriKind.Absolute);
+        return uri.GetLeftPart(UriPartial.Authority).TrimEnd('/') + "/";
+    }
 
     public bool ShowLocation
     {

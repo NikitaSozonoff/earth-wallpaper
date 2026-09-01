@@ -43,13 +43,19 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="models:SourceLink">
-                                <Button Content="{Binding Label}"
-                                        Padding="10,5"
-                                        Margin="0,0,8,6"
-                                        FontSize="11"
-                                        ToolTip.Tip="{Binding Url}"
-                                        Click="OpenSource_OnClick" />
+                            <DataTemplate x:DataType="models:SourceDisplayLink">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,5,3">
+                                    <HyperlinkButton Content="{Binding DisplayUrl}"
+                                                     Padding="0"
+                                                     FontSize="11"
+                                                     ToolTip.Tip="{Binding Url}"
+                                                     Click="OpenSource_OnClick" />
+                                    <TextBlock Text="{Binding Separator}"
+                                               Margin="2,0,0,0"
+                                               FontSize="11"
+                                               Foreground="#7F8A97"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

@@ -424,7 +424,7 @@ public partial class App : Application
 
         if (_viewModel.Settings.ContentUpdateMode == ContentUpdateMode.DownloadAutomatically)
         {
-            await InstallPlanAsync(plan);
+            await InstallPlanAsync(plan, showProgressWindow: false);
             return;
         }
 
@@ -491,7 +491,7 @@ public partial class App : Application
         }
     }
 
-    private async Task InstallPlanAsync(ContentUpdatePlan plan)
+    private async Task InstallPlanAsync(ContentUpdatePlan plan, bool showProgressWindow = true)
     {
         if (_contentUpdateService is null || _catalogService is null || _viewModel is null) return;
         ContentDownloadProgressWindow? progressWindow = null;
@@ -501,7 +501,7 @@ public partial class App : Application
             _pendingPlan = null;
             UpdateTrayContentText("Downloading content…");
             _viewModel.SetContentUpdateState("Preparing content download…", false, true);
-            if (_mainWindow is not null)
+            if (showProgressWindow && _mainWindow is not null)
             {
                 progressWindow = new ContentDownloadProgressWindow(plan);
                 progressWindow.Show(_mainWindow);
@@ -529,7 +529,7 @@ public partial class App : Application
         }
         finally
         {
-            if (_mainWindow is not null) _mainWindow.IsEnabled = true;
+            if (progressWindow is not null && _mainWindow is not null) _mainWindow.IsEnabled = true;
             progressWindow?.FinishAndClose();
             _contentUpdateLock.Release();
         }

@@ -22,7 +22,7 @@ public partial class DetailsWindow : Window
 
     private void OpenSource_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (sender is not Button { DataContext: SourceLink source } || !Uri.TryCreate(source.Url, UriKind.Absolute, out _)) return;
+        if (sender is not HyperlinkButton { DataContext: SourceDisplayLink source } || !Uri.TryCreate(source.Url, UriKind.Absolute, out _)) return;
         Process.Start(new ProcessStartInfo(source.Url) { UseShellExecute = true });
     }
 
