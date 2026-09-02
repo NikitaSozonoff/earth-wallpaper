@@ -14,6 +14,12 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (args.Contains("--ui-smoke-test", StringComparer.OrdinalIgnoreCase))
+        {
+            Environment.ExitCode = RunUiSmokeTest();
+            return;
+        }
+
         if (args.Contains("--smoke-test", StringComparer.OrdinalIgnoreCase))
         {
             Environment.ExitCode = RunPackagedSmokeTest();
@@ -98,5 +104,19 @@ sealed class Program
             return SemanticVersion.TryParse(ApplicationVersion.Display, out _) ? 0 : 4;
         }
         catch { return 1; }
+    }
+
+    private static int RunUiSmokeTest()
+    {
+        try
+        {
+            BuildAvaloniaApp().SetupWithoutStarting();
+            return RunPackagedSmokeTest();
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine(exception);
+            return 5;
+        }
     }
 }
