@@ -95,29 +95,25 @@ plutil -lint "$contents_path/Info.plist"
 signing_identity="${MACOS_SIGNING_IDENTITY:--}"
 echo "Signing application bundle with identity: $signing_identity"
 if [[ "$signing_identity" == "-" ]]; then
-  signing_timestamp=(--timestamp=none)
-  signing_runtime=()
+  signing_arguments=(--timestamp=none)
 else
-  signing_timestamp=(--timestamp)
-  signing_runtime=(--options runtime)
+  signing_arguments=(--timestamp --options runtime)
 fi
 while IFS= read -r -d '' candidate; do
   if file "$candidate" | grep -q 'Mach-O'; then
-    codesign --force "${signing_timestamp[@]}" "${signing_runtime[@]}" --sign "$signing_identity" "$candidate"
+    codesign --force "${signing_arguments[@]}" --sign "$signing_identity" "$candidate"
   fi
 done < <(find "$app_path" -type f -print0)
 
 codesign \
   --force \
-  "${signing_timestamp[@]}" \
-  "${signing_runtime[@]}" \
+  "${signing_arguments[@]}" \
   --entitlements "$entitlements_path" \
   --sign "$signing_identity" \
   "$macos_path/EarthWallpaper"
 codesign \
   --force \
-  "${signing_timestamp[@]}" \
-  "${signing_runtime[@]}" \
+  "${signing_arguments[@]}" \
   --entitlements "$entitlements_path" \
   --sign "$signing_identity" \
   "$app_path"
