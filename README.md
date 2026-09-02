@@ -46,7 +46,16 @@ Download the package for your operating system from [GitHub Releases](https://gi
 - Windows: `EarthWallpaper-Setup-<version>.exe`;
 - macOS on Apple Silicon: `EarthWallpaper-macOS-arm64-<version>.dmg`.
 
-The Windows installation is per-user and does not require administrator privileges. The portable ZIP is provided for Windows testing without installation. The first macOS beta is ad-hoc signed, so Gatekeeper requires a one-time **Open Anyway** confirmation under **System Settings → Privacy & Security**.
+The Windows installation is per-user and does not require administrator privileges. Close a running Earth Wallpaper instance from its tray menu before installing an update. The portable ZIP is provided for Windows testing without installation.
+
+The macOS beta is built for Apple Silicon and is ad-hoc signed, but it is not notarized by Apple. After dragging **Earth Wallpaper.app** from the DMG to **Applications**, try **Control-click → Open** and then **System Settings → Privacy & Security → Open Anyway**. If macOS still does nothing, run this one-time command in Terminal:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Earth Wallpaper.app"
+open "/Applications/Earth Wallpaper.app"
+```
+
+This removes the internet-download quarantine attribute from Earth Wallpaper only; it does not disable Gatekeeper globally. These instructions are also included inside the DMG.
 
 Release packages are self-contained: users do not need to install the .NET SDK or Runtime. The SDK listed below is required only for building the project from source.
 

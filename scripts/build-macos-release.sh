@@ -125,6 +125,7 @@ echo "Running signed Avalonia UI smoke test..."
 echo "Creating macOS disk image..."
 mkdir -p "$dmg_stage_path"
 ditto "$app_path" "$dmg_stage_path/Earth Wallpaper.app"
+ditto "$platform_root/READ ME FIRST.txt" "$dmg_stage_path/READ ME FIRST.txt"
 ln -s /Applications "$dmg_stage_path/Applications"
 hdiutil create \
   -volname "Earth Wallpaper" \

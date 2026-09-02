@@ -134,6 +134,6 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart("v")
           $assets = @(Get-ChildItem "release-assets" -File | ForEach-Object { $_.FullName })
-          $arguments = @("release", "create", $tag) + $assets + @("--title", "Earth Wallpaper $version", "--generate-notes")
+          $arguments = @("release", "create", $tag) + $assets + @("--title", "Earth Wallpaper $version", "--notes-file", "docs/RELEASE-NOTES.md")
           if ($version.Contains("-")) { $arguments += "--prerelease" }
           gh @arguments

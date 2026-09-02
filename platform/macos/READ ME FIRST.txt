@@ -1,0 +1,21 @@
+EARTH WALLPAPER FOR macOS — INSTALLATION
+
+This beta supports Apple Silicon Macs (M1 or newer) with macOS 13 or newer.
+It is ad-hoc signed but is not notarized by Apple, so Gatekeeper may block its
+first launch even though the application bundle has passed its integrity checks.
+
+1. Drag "Earth Wallpaper.app" from this disk image to Applications.
+2. In Applications, Control-click Earth Wallpaper and choose Open.
+3. If prompted, open System Settings > Privacy & Security and choose Open Anyway.
+4. If macOS still does nothing, open Terminal and run:
+
+   xattr -dr com.apple.quarantine "/Applications/Earth Wallpaper.app"
+   open "/Applications/Earth Wallpaper.app"
+
+The xattr command removes the internet-download quarantine attribute from this
+application only. It does not disable Gatekeeper or change system-wide security.
+
+Earth Wallpaper runs as a menu-bar application and may not show an icon in the Dock.
+
+Project and updates:
+https://github.com/NikitaSozonoff/earth-wallpaper
