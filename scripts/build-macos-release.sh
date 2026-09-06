@@ -104,28 +104,38 @@ plutil -lint "$contents_path/Info.plist"
 signing_identity="${MACOS_SIGNING_IDENTITY:--}"
 echo "Signing application bundle with identity: $signing_identity"
 if [[ "$signing_identity" == "-" ]]; then
-  signing_arguments=(--timestamp=none)
+  # Intel Swift binaries are not guaranteed to carry an implicit ad-hoc
+  # signature. Sign the complete bundle in one inside-out pass so the helper,
+  # native libraries and main executable all receive the same ad-hoc identity.
+  codesign \
+    --force \
+    --deep \
+    --timestamp=none \
+    --entitlements "$entitlements_path" \
+    --sign "$signing_identity" \
+    "$app_path"
 else
   signing_arguments=(--timestamp --options runtime)
-fi
-while IFS= read -r -d '' candidate; do
-  if file "$candidate" | grep -q 'Mach-O'; then
-    codesign --force "${signing_arguments[@]}" --sign "$signing_identity" "$candidate"
-  fi
-done < <(find "$app_path" -type f -print0)
+  while IFS= read -r -d '' candidate; do
+    if file "$candidate" | grep -q 'Mach-O'; then
+      codesign --force "${signing_arguments[@]}" --sign "$signing_identity" "$candidate"
+    fi
+  done < <(find "$frameworks_path" -type f -print0)
 
-codesign \
-  --force \
-  "${signing_arguments[@]}" \
-  --entitlements "$entitlements_path" \
-  --sign "$signing_identity" \
-  "$macos_path/EarthWallpaper"
-codesign \
-  --force \
-  "${signing_arguments[@]}" \
-  --entitlements "$entitlements_path" \
-  --sign "$signing_identity" \
-  "$app_path"
+  codesign --force "${signing_arguments[@]}" --sign "$signing_identity" "$macos_path/EarthWallpaperMacHelper"
+  codesign \
+    --force \
+    "${signing_arguments[@]}" \
+    --entitlements "$entitlements_path" \
+    --sign "$signing_identity" \
+    "$macos_path/EarthWallpaper"
+  codesign \
+    --force \
+    "${signing_arguments[@]}" \
+    --entitlements "$entitlements_path" \
+    --sign "$signing_identity" \
+    "$app_path"
+fi
 codesign --verify --deep --strict --verbose=2 "$app_path"
 
 echo "Running signed Avalonia UI smoke test..."
