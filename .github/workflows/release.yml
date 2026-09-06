@@ -9,7 +9,7 @@ on:
       version:
         description: "Version to build without publishing a GitHub Release"
         required: true
-        default: "0.1.0-beta.3"
+        default: "0.1.0-beta.4"
         type: string
 
 permissions:
@@ -61,7 +61,16 @@ jobs:
           if-no-files-found: error
 
   macos-build:
-    runs-on: macos-15
+    name: macos-build (${{ matrix.architecture }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: arm64
+            runner: macos-15
+          - architecture: x64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
 
     steps:
@@ -75,11 +84,11 @@ jobs:
 
       - name: Restore and test
         run: |
-          dotnet restore app/WallpaperWidget/WallpaperWidget.csproj -r osx-arm64
+          dotnet restore app/WallpaperWidget/WallpaperWidget.csproj -r osx-${{ matrix.architecture }}
           dotnet restore tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj
           dotnet run --project tests/ContentUpdateSmoke/ContentUpdateSmoke.csproj -c Release --no-restore -- --resume-only
 
-      - name: Build macOS Apple Silicon release
+      - name: Build macOS release
         env:
           MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -92,14 +101,14 @@ jobs:
             version="${GITHUB_REF_NAME#v}"
           fi
           chmod +x scripts/build-macos-release.sh
-          ./scripts/build-macos-release.sh "$version" arm64
+          ./scripts/build-macos-release.sh "$version" "${{ matrix.architecture }}"
           mkdir -p artifacts/upload/macos
           cp "artifacts/release/$version/"*.dmg artifacts/upload/macos/
 
       - name: Upload macOS release artifact
         uses: actions/upload-artifact@v6
         with:
-          name: macos-release
+          name: macos-${{ matrix.architecture }}-release
           path: artifacts/upload/macos/*
           if-no-files-found: error
 

@@ -20,6 +20,15 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "The macOS bundle must be built on macOS." >&2
   exit 69
 fi
+expected_machine="$architecture"
+if [[ "$architecture" == "x64" ]]; then
+  expected_machine="x86_64"
+fi
+actual_machine="$(uname -m)"
+if [[ "$actual_machine" != "$expected_machine" ]]; then
+  echo "The $architecture package must be built on a $expected_machine Mac; this runner is $actual_machine." >&2
+  exit 69
+fi
 
 script_root="$(cd "$(dirname "$0")" && pwd)"
 repository_root="$(cd "$script_root/.." && pwd)"

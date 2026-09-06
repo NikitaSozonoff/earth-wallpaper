@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using WallpaperWidget.Models;
 using WallpaperWidget.Services;
@@ -22,7 +23,7 @@ public partial class ApplicationUpdateWindow : Window
         ReleaseNotesText.Text = BuildReleaseNotes(update.ReleaseNotes);
         ChannelText.Text = update.IsPrerelease ? "Beta release" : "Stable release";
         ConfigurePackageButton(WindowsDownloadButton, update.PackageFor(ApplicationPackagePlatform.Windows), "Windows package unavailable");
-        ConfigurePackageButton(MacDownloadButton, update.PackageFor(ApplicationPackagePlatform.MacOS), "macOS package unavailable");
+        ConfigurePackageButton(MacDownloadButton, PackageForCurrentArchitecture(ApplicationPackagePlatform.MacOS), "macOS package unavailable");
     }
 
     private void Later_OnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close(false);
@@ -33,7 +34,7 @@ public partial class ApplicationUpdateWindow : Window
 
     private void OpenPackage(ApplicationPackagePlatform platform)
     {
-        var package = _update.PackageFor(platform);
+        var package = PackageForCurrentArchitecture(platform);
         var url = package?.DownloadUrl ?? _update.ReleasePageUrl;
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return;
         try
@@ -51,6 +52,20 @@ public partial class ApplicationUpdateWindow : Window
         {
             AppLog.Warning("application_update_open_failed", "The application update page could not be opened.", new { exception = exception.GetType().Name });
         }
+    }
+
+    private ApplicationUpdatePackage? PackageForCurrentArchitecture(ApplicationPackagePlatform platform)
+    {
+        if (platform != ApplicationPackagePlatform.MacOS)
+            return _update.PackageFor(platform);
+
+        var architecture = RuntimeInformation.ProcessArchitecture switch
+        {
+            Architecture.Arm64 => ApplicationPackageArchitecture.Arm64,
+            Architecture.X64 => ApplicationPackageArchitecture.X64,
+            _ => ApplicationPackageArchitecture.Any,
+        };
+        return _update.PackageFor(platform, architecture) ?? _update.PackageFor(platform);
     }
 
     private static void ConfigurePackageButton(Button button, ApplicationUpdatePackage? package, string unavailableText)

@@ -71,6 +71,10 @@ static async Task CheckApplicationUpdateDiscoveryAsync()
           {
             "name": "EarthWallpaper-macOS-arm64-0.1.0-beta.2.dmg",
             "browser_download_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/download/v0.1.0-beta.2/EarthWallpaper-macOS-arm64-0.1.0-beta.2.dmg"
+          },
+          {
+            "name": "EarthWallpaper-macOS-x64-0.1.0-beta.2.dmg",
+            "browser_download_url": "https://github.com/NikitaSozonoff/earth-wallpaper/releases/download/v0.1.0-beta.2/EarthWallpaper-macOS-x64-0.1.0-beta.2.dmg"
           }
         ]
       }
@@ -82,9 +86,10 @@ static async Task CheckApplicationUpdateDiscoveryAsync()
     var result = await service.CheckAsync();
     if (!result.IsUpdateAvailable || result.AvailableUpdate?.Version != "0.1.0-beta.2" ||
         result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.Windows) is null ||
-        result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.MacOS) is null)
-        throw new InvalidOperationException("GitHub release discovery did not expose both platform packages.");
-    Console.WriteLine("application update: newer GitHub prerelease exposes explicit Windows and macOS packages");
+        result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.MacOS, ApplicationPackageArchitecture.Arm64) is null ||
+        result.AvailableUpdate.PackageFor(ApplicationPackagePlatform.MacOS, ApplicationPackageArchitecture.X64) is null)
+        throw new InvalidOperationException("GitHub release discovery did not expose Windows, Apple Silicon and Intel packages.");
+    Console.WriteLine("application update: newer GitHub prerelease exposes Windows, Apple Silicon and Intel packages");
 }
 
 static async Task CheckPublishedCatalogsAsync()

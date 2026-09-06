@@ -6,7 +6,7 @@ Download and run `EarthWallpaper-Setup-<version>.exe`. Before updating an existi
 
 ## macOS installation
 
-The current DMG supports Apple Silicon Macs (M1 or newer) with macOS 13 or newer. This beta is ad-hoc signed but is not notarized by Apple.
+Separate DMGs are provided for Apple Silicon (`arm64`, M1 or newer) and Intel (`x64`) Macs with macOS 13 or newer. Download the package matching the Mac's processor. This beta is ad-hoc signed but is not notarized by Apple.
 
 1. Open the DMG and drag **Earth Wallpaper.app** to **Applications**.
 2. In Applications, Control-click Earth Wallpaper and choose **Open**.

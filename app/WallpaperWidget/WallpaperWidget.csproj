@@ -8,7 +8,7 @@
     <ApplicationIcon Condition="'$(RuntimeIdentifier)' == '' Or $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('win-'))">Assets\avalonia-logo.ico</ApplicationIcon>
     <AssemblyName>EarthWallpaper</AssemblyName>
     <RootNamespace>WallpaperWidget</RootNamespace>
-    <Version>0.1.0-beta.3</Version>
+    <Version>0.1.0-beta.4</Version>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
     <Product>Earth Wallpaper</Product>

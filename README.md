@@ -2,7 +2,7 @@
 
 Earth Wallpaper is a lightweight desktop widget for Windows and macOS that changes the wallpaper and presents a short educational story about the current place. The overlay can show a location, title and short description, or collapse to minimal controls.
 
-> The project is currently in beta. Windows installer/portable packages and an Apple Silicon macOS disk image are produced through GitHub Releases.
+> The project is currently in beta. Windows installer/portable packages and separate Apple Silicon and Intel macOS disk images are produced through GitHub Releases.
 
 ## Features
 
@@ -44,7 +44,8 @@ Cloudflare R2 carries wallpaper content. GitHub carries source code and applicat
 Download the package for your operating system from [GitHub Releases](https://github.com/NikitaSozonoff/earth-wallpaper/releases):
 
 - Windows: `EarthWallpaper-Setup-<version>.exe`;
-- macOS on Apple Silicon: `EarthWallpaper-macOS-arm64-<version>.dmg`.
+- macOS on Apple Silicon (M1 or newer): `EarthWallpaper-macOS-arm64-<version>.dmg`;
+- macOS on Intel: `EarthWallpaper-macOS-x64-<version>.dmg`.
 
 The Windows installation is per-user and does not require administrator privileges. Close a running Earth Wallpaper instance from its tray menu before installing an update. The portable ZIP is provided for Windows testing without installation.
 
@@ -89,7 +90,7 @@ dotnet run --project tests\ContentUpdateSmoke\ContentUpdateSmoke.csproj -c Relea
 On macOS, build an Apple Silicon beta package with:
 
 ```bash
-./scripts/build-macos-release.sh 0.1.0-beta.3 arm64
+./scripts/build-macos-release.sh 0.1.0-beta.4 arm64
 ```
 
 See [development setup](docs/DEVELOPMENT.md), [content publishing](docs/CONTENT-PUBLISHING.md), and [content update internals](docs/CONTENT-UPDATES.md).

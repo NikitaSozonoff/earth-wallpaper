@@ -42,8 +42,10 @@ dotnet publish app\WallpaperWidget\WallpaperWidget.csproj -c Release -r osx-arm6
 The final bundle needs the native Swift helper, code signing and `hdiutil`, so run the release packaging step on macOS:
 
 ```bash
-./scripts/build-macos-release.sh 0.1.0-beta.3 arm64
+./scripts/build-macos-release.sh 0.1.0-beta.4 arm64
 ```
+
+Use an Apple Silicon Mac for `arm64` and an Intel Mac for `x64`. The GitHub release workflow runs both builds on matching native runners.
 
 ## Local-only directories
 

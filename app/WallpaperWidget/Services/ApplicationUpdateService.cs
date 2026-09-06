@@ -66,6 +66,7 @@ public sealed class ApplicationUpdateService
             {
                 packages.Add(new ApplicationUpdatePackage(
                     ApplicationPackagePlatform.Windows,
+                    ApplicationPackageArchitecture.Any,
                     "Windows installer (.exe)",
                     asset.Name,
                     asset.BrowserDownloadUrl));
@@ -76,13 +77,20 @@ public sealed class ApplicationUpdateService
                 asset.Name.EndsWith(".dmg", StringComparison.OrdinalIgnoreCase))
             {
                 var architecture = asset.Name.Contains("arm64", StringComparison.OrdinalIgnoreCase)
-                    ? "Apple Silicon"
+                    ? ApplicationPackageArchitecture.Arm64
                     : asset.Name.Contains("x64", StringComparison.OrdinalIgnoreCase)
-                        ? "Intel"
-                        : "macOS";
+                        ? ApplicationPackageArchitecture.X64
+                        : ApplicationPackageArchitecture.Any;
+                var architectureLabel = architecture switch
+                {
+                    ApplicationPackageArchitecture.Arm64 => "Apple Silicon",
+                    ApplicationPackageArchitecture.X64 => "Intel",
+                    _ => "macOS",
+                };
                 packages.Add(new ApplicationUpdatePackage(
                     ApplicationPackagePlatform.MacOS,
-                    $"macOS {architecture} (.dmg)",
+                    architecture,
+                    $"macOS {architectureLabel} (.dmg)",
                     asset.Name,
                     asset.BrowserDownloadUrl));
             }

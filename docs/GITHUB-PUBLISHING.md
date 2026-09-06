@@ -39,13 +39,14 @@ Application binaries are attached to GitHub Releases rather than committed to th
 EarthWallpaper-Setup-<version>.exe
 EarthWallpaper-Portable-<version>.zip
 EarthWallpaper-macOS-arm64-<version>.dmg
+EarthWallpaper-macOS-x64-<version>.dmg
 checksums.txt
 release-manifest.json
 ```
 
 The first public test release will use a prerelease tag such as `v0.1.0-beta`.
 
-Pushing a version tag runs `.github/workflows/release.yml`. Separate Windows and Apple Silicon macOS jobs build the self-contained packages, then a final job combines them, creates unified SHA-256 checksums and publishes a GitHub prerelease when the version contains a suffix such as `-beta.1`.
+Pushing a version tag runs `.github/workflows/release.yml`. Separate Windows, Apple Silicon macOS and Intel macOS jobs build the self-contained packages, then a final job combines them, creates unified SHA-256 checksums and publishes a GitHub prerelease when the version contains a suffix such as `-beta.1`.
 
 ## License
 

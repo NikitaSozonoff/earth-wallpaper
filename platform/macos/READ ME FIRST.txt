@@ -1,6 +1,7 @@
 EARTH WALLPAPER FOR macOS — INSTALLATION
 
-This beta supports Apple Silicon Macs (M1 or newer) with macOS 13 or newer.
+This beta provides separate packages for Apple Silicon (arm64, M1 or newer) and
+Intel (x64) Macs with macOS 13 or newer. Use the DMG matching the Mac's processor.
 It is ad-hoc signed but is not notarized by Apple, so Gatekeeper may block its
 first launch even though the application bundle has passed its integrity checks.
 

@@ -6,8 +6,16 @@ public enum ApplicationPackagePlatform
     MacOS,
 }
 
+public enum ApplicationPackageArchitecture
+{
+    Any,
+    Arm64,
+    X64,
+}
+
 public sealed record ApplicationUpdatePackage(
     ApplicationPackagePlatform Platform,
+    ApplicationPackageArchitecture Architecture,
     string DisplayName,
     string FileName,
     string DownloadUrl);
@@ -20,8 +28,17 @@ public sealed record ApplicationUpdateInfo(
     string ReleaseNotes,
     bool IsPrerelease)
 {
-    public ApplicationUpdatePackage? PackageFor(ApplicationPackagePlatform platform) =>
-        Packages.FirstOrDefault(package => package.Platform == platform);
+    public ApplicationUpdatePackage? PackageFor(
+        ApplicationPackagePlatform platform,
+        ApplicationPackageArchitecture architecture = ApplicationPackageArchitecture.Any)
+    {
+        var platformPackages = Packages.Where(package => package.Platform == platform);
+        if (architecture == ApplicationPackageArchitecture.Any)
+            return platformPackages.FirstOrDefault();
+
+        return platformPackages.FirstOrDefault(package => package.Architecture == architecture) ??
+               platformPackages.FirstOrDefault(package => package.Architecture == ApplicationPackageArchitecture.Any);
+    }
 }
 
 public sealed record ApplicationUpdateCheckResult(
